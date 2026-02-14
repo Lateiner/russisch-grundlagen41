@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Nuancen: Verbot oder Rat?</title>
+    <style>
+        :root {
+            --primary: #3f51b5;
+            --bg-color: #f4f4f9;
+            --card-bg: #ffffff;
+            --success: #4caf50;
+            --error: #f44336;
+            --text: #333;
+            
+            /* Farben für die Optionen */
+            --prohibition-color: #e53935; /* Rot für Verbot */
+            --advice-color: #1e88e5;      /* Blau für Rat */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 4px 25px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-top: 0;
+            font-size: 1.6rem;
+        }
+
+        /* --- THEORIE BOX --- */
+        .theory-box {
+            background-color: #e3f2fd;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            border-left: 5px solid var(--primary);
+        }
+        
+        .theory-title {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+            color: var(--primary);
+        }
+
+        .tag-prohibit {
+            color: var(--prohibition-color);
+            font-weight: bold;
+        }
+        .tag-advice {
+            color: var(--advice-color);
+            font-weight: bold;
+        }
+
+        /* --- FORTSCHRITT --- */
+        .progress-bar {
+            height: 6px;
+            background-color: #eee;
+            border-radius: 3px;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        /* --- SZENARIO KARTE --- */
+        .scenario-card {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .situation-icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+
+        .situation-text {
+            font-size: 1.3rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 10px;
+            color: #222;
+        }
+
+        .situation-subtext {
+            font-size: 1rem;
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+
+        /* --- BUTTONS (OPTIONEN) --- */
+        .options-container {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .choice-btn {
+            flex: 1;
+            padding: 20px 10px;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #f5f5f5;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .choice-btn span.ru {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .choice-btn span.de {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /* Hover Effekte */
+        .choice-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        /* Spezifische Farben für die Buttons */
+        .btn-prohibit {
+            border-color: #ffcdd2;
+        }
+        .btn-prohibit:hover { background-color: #ffebee; }
+        
+        .btn-advice {
+            border-color: #bbdefb;
+        }
+        .btn-advice:hover { background-color: #e3f2fd; }
+
+        /* Feedback Status */
+        .choice-btn.correct {
+            background-color: var(--success) !important;
+            border-color: var(--success) !important;
+            color: white !important;
+        }
+        .choice-btn.correct span.de { color: rgba(255,255,255,0.9); }
+
+        .choice-btn.incorrect {
+            background-color: var(--bg-color) !important;
+            border-color: var(--error) !important;
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .choice-btn.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* --- FEEDBACK TEXT --- */
+        .feedback-container {
+            min-height: 80px;
+            text-align: center;
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .feedback-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .feedback-explanation {
+            font-size: 0.95rem;
+            color: #444;
+        }
+
+        /* --- NAVIGATION --- */
+        .nav-controls {
+            margin-top: auto;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        button.nav-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            transition: opacity 0.2s;
+            min-width: 120px;
+        }
+        button.nav-btn:hover { opacity: 0.9; }
+
+        .btn-reset { background-color: #757575; }
+        .btn-next { 
+            background-color: var(--success); 
+            display: none; 
+            width: 100%;
+            max-width: 200px;
+            animation: popIn 0.3s;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 500px) {
+            .options-container {
+                flex-direction: column;
+            }
+            .choice-btn {
+                flex-direction: row;
+                justify-content: space-between;
+                padding: 15px 20px;
+            }
+            .choice-btn span.de {
+                margin-bottom: 0;
+            }
+            .situation-text {
+                font-size: 1.1rem;
+            }
+            .situation-icon {
+                font-size: 3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Was sagt man?</h1>
+
+    <div class="theory-box">
+        <span class="theory-title">Merkregel:</span>
+        <span class="tag-prohibit">Не надо</span> = Strenges Verbot ("Tu das nicht!", "Hör auf!").<br>
+        <span class="tag-advice">Не нужно</span> = Rat / Nicht nötig ("Solltest du nicht", "Brauchst du nicht").
+    </div>
+
+    <div class="progress-bar">
+        <div class="progress-fill" id="progress"></div>
+    </div>
+
+    <!-- SPIELBEREICH -->
+    <div id="game-area" class="scenario-card">
+        <!-- Wird per JS gefüllt -->
+    </div>
+
+    <!-- FEEDBACK -->
+    <div class="feedback-container" id="feedback-area" style="display: none;">
+        <span class="feedback-title" id="fb-title"></span>
+        <span class="feedback-explanation" id="fb-text"></span>
+    </div>
+
+    <!-- NAVIGATION -->
+    <div class="nav-controls">
+        <button class="nav-btn btn-reset" onclick="restartGame()">Neustart</button>
+        <button class="nav-btn btn-next" id="btn-next" onclick="nextQuestion()">Weiter ➡</button>
+    </div>
+</div>
+
+<script>
+    // --- DATEN ---
+    // type: 'prohibit' (ne nada) oder 'advice' (ne nuzhno)
+    const scenarios = [
+        {
+            icon: "👟",
+            text: "Ein Kind will mit schmutzigen Schuhen ins Haus laufen.",
+            subtext: "Die Mutter will das sofort verhindern.",
+            correctType: "prohibit", 
+            explanation: "Das ist ein klares Verbot. Die Handlung ist unerwünscht und soll sofort gestoppt werden."
+        },
+        {
+            icon: "☕",
+            text: "Dein Freund will um 23 Uhr noch einen starken Kaffee trinken.",
+            subtext: "Du denkst, das ist keine gute Idee (Schlafprobleme).",
+            correctType: "advice",
+            explanation: "Das ist ein Rat. Es ist nicht verboten, aber du empfiehlst es nicht."
+        },
+        {
+            icon: "🏥",
+            text: "Jemand zündet sich im Krankenhaus eine Zigarette an.",
+            subtext: "Das ist streng verboten.",
+            correctType: "prohibit",
+            explanation: "Hier gilt eine strikte Regel. Rauchen ist verboten!"
+        },
+        {
+            icon: "🧥",
+            text: "Du willst im Sommer einen dicken Wintermantel kaufen.",
+            subtext: "Deine Freundin meint, das ist Geldverschwendung.",
+            correctType: "advice",
+            explanation: "Es besteht keine Notwendigkeit ('nicht nötig'). Es ist ein Ratschlag."
+        },
+        {
+            icon: "🔪",
+            text: "Ein kleines Kind spielt mit einem scharfen Messer.",
+            subtext: "Gefahr!",
+            correctType: "prohibit",
+            explanation: "Gefahr! Ein strenges Verbot ist hier notwendig."
+        },
+        {
+            icon: "😟",
+            text: "Dein Kollege macht sich Sorgen wegen der Präsentation.",
+            subtext: "Er ist aber gut vorbereitet. Du willst ihn beruhigen.",
+            correctType: "advice",
+            explanation: "Du sagst: 'Du brauchst dir keine Sorgen zu machen' (Nicht nötig)."
+        },
+        {
+            icon: "🚦",
+            text: "Jemand will bei Rot über die Straße gehen.",
+            subtext: "Verkehrsregel!",
+            correctType: "prohibit",
+            explanation: "Es ist verboten und gefährlich."
+        },
+        {
+            icon: "🎁",
+            text: "Ein Gast will teure Geschenke mitbringen.",
+            subtext: "Der Gastgeber ist bescheiden und will das nicht.",
+            correctType: "advice",
+            explanation: "Höfliche Ablehnung: 'Das ist doch nicht nötig'."
+        }
+    ];
+
+    // State
+    let currentIndex = 0;
+    let isSolved = false;
+
+    // DOM Elements
+    const gameArea = document.getElementById('game-area');
+    const feedbackArea = document.getElementById('feedback-area');
+    const fbTitle = document.getElementById('fb-title');
+    const fbText = document.getElementById('fb-text');
+    const btnNext = document.getElementById('btn-next');
+    const progressBar = document.getElementById('progress');
+
+    // --- INITIALISIERUNG ---
+    function init() {
+        currentIndex = 0;
+        loadScenario();
+    }
+
+    function loadScenario() {
+        isSolved = false;
+        const data = scenarios[currentIndex];
+        
+        // UI Reset
+        feedbackArea.style.display = 'none';
+        btnNext.style.display = 'none';
+        
+        // Progress Bar
+        const pct = (currentIndex / scenarios.length) * 100;
+        progressBar.style.width = `${pct}%`;
+
+        // Content rendern
+        // Wir erstellen das HTML jedes Mal neu für die Fade-In Animation
+        gameArea.innerHTML = `
+            <div class="situation-icon">${data.icon}</div>
+            <div class="situation-text">${data.text}</div>
+            <div class="situation-subtext">${data.subtext}</div>
+            
+            <div class="options-container">
+                <button class="choice-btn btn-prohibit" onclick="checkAnswer('prohibit')">
+                    <span class="ru">Не надо!</span>
+                    <span class="de">Verbot / Tu das nicht</span>
+                </button>
+                
+                <button class="choice-btn btn-advice" onclick="checkAnswer('advice')">
+                    <span class="ru">Не нужно.</span>
+                    <span class="de">Rat / Nicht nötig</span>
+                </button>
+            </div>
+        `;
+        
+        // Trigger reflow für Animation
+        gameArea.classList.remove('scenario-card');
+        void gameArea.offsetWidth;
+        gameArea.classList.add('scenario-card');
+    }
+
+    // --- LOGIK ---
+    function checkAnswer(userChoice) {
+        if (isSolved) return;
+        isSolved = true;
+
+        const data = scenarios[currentIndex];
+        const buttons = document.querySelectorAll('.choice-btn');
+        let selectedBtn, correctBtn;
+
+        // Buttons zuordnen
+        buttons.forEach(btn => {
+            if (btn.classList.contains(userChoice === 'prohibit' ? 'btn-prohibit' : 'btn-advice')) {
+                selectedBtn = btn;
+            }
+            if (btn.classList.contains(data.correctType === 'prohibit' ? 'btn-prohibit' : 'btn-advice')) {
+                correctBtn = btn;
+            }
+            // Alle deaktivieren
+            btn.classList.add('disabled');
+        });
+
+        // Visuelles Feedback
+        feedbackArea.style.display = 'block';
+
+        if (userChoice === data.correctType) {
+            // RICHTIG
+            selectedBtn.classList.remove('disabled');
+            selectedBtn.classList.add('correct');
+            
+            fbTitle.textContent = "Richtig!";
+            fbTitle.style.color = "var(--success)";
+        } else {
+            // FALSCH
+            selectedBtn.classList.add('incorrect');
+            correctBtn.classList.remove('disabled');
+            correctBtn.classList.add('correct'); // Zeige was richtig gewesen wäre
+            
+            fbTitle.textContent = "Nicht ganz.";
+            fbTitle.style.color = "var(--error)";
+        }
+
+        fbText.textContent = data.explanation;
+        
+        // Next Button handling
+        if (currentIndex < scenarios.length - 1) {
+            btnNext.style.display = 'block';
+        } else {
+            btnNext.textContent = "Fertig! 🎉";
+            btnNext.style.display = 'block';
+            btnNext.onclick = null;
+            progressBar.style.width = "100%";
+        }
+    }
+
+    function nextQuestion() {
+        currentIndex++;
+        if (currentIndex < scenarios.length) {
+            loadScenario();
+        }
+    }
+
+    function restartGame() {
+        init();
+        btnNext.onclick = nextQuestion;
+        btnNext.textContent = "Weiter ➡";
+    }
+
+    // Start
+    window.addEventListener('DOMContentLoaded', init);
+
+</script>
+
+</body>
+</html>
