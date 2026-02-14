@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Zeitstrahl: Vergangenheit & Zukunft</title>
+    <style>
+        :root {
+            --primary: #3f51b5;
+            --secondary: #7986cb;
+            --bg-color: #f4f4f9;
+            --card-bg: #ffffff;
+            --success: #4caf50;
+            --error: #f44336;
+            --text: #333;
+            --header-bg: #e8eaf6;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px; /* Breiter für die Tabelle */
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-top: 0;
+        }
+
+        .intro {
+            background-color: var(--header-bg);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            text-align: center;
+            color: #555;
+            border-left: 5px solid var(--primary);
+        }
+
+        /* --- TIMELINE GRID --- */
+        .timeline-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Header Row (nur Desktop/Tablet) */
+        .header-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            font-weight: bold;
+            text-align: center;
+            color: var(--primary);
+            padding: 10px;
+            border-bottom: 2px solid var(--primary);
+            font-size: 1.1rem;
+        }
+
+        /* Data Row */
+        .time-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            align-items: center;
+            gap: 15px;
+            transition: background-color 0.2s;
+        }
+
+        .time-row:hover {
+            background-color: #fafafa;
+        }
+
+        /* Spalten */
+        .col {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .col-past, .col-future {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px dashed #ccc;
+        }
+
+        .col-present {
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #333;
+            border-left: 2px solid #eee;
+            border-right: 2px solid #eee;
+        }
+
+        /* Labels für Mobile (standardmäßig versteckt) */
+        .mobile-label {
+            display: none;
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        /* Select Styling */
+        select {
+            width: 100%;
+            padding: 8px;
+            font-size: 1rem;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            background-color: white;
+            cursor: pointer;
+            outline: none;
+        }
+
+        select:focus {
+            border-color: var(--primary);
+        }
+
+        /* Feedback States */
+        select.correct {
+            border-color: var(--success);
+            background-color: #e8f5e9;
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        select.incorrect {
+            border-color: var(--error);
+            background-color: #ffebee;
+        }
+
+        /* Satzteile um das Dropdown herum */
+        .sentence-part {
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        /* --- CONTROLS --- */
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            transition: opacity 0.2s;
+        }
+        button:hover { opacity: 0.9; }
+
+        .btn-reset { background-color: #757575; }
+        .btn-solve { background-color: #ff9800; }
+
+        /* --- RESPONSIVE DESIGN (Mobile Cards) --- */
+        @media (max-width: 768px) {
+            .header-row {
+                display: none; /* Header ausblenden auf Handy */
+            }
+
+            .time-row {
+                display: flex;
+                flex-direction: column; /* Untereinander */
+                gap: 10px;
+                border-left: 5px solid var(--primary); /* Farbiger Akzent */
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            }
+
+            .col-present {
+                border: none;
+                background-color: var(--header-bg);
+                padding: 10px;
+                border-radius: 4px;
+                order: 1; /* Präsens zuerst anzeigen als "Titel" */
+            }
+
+            .col-past {
+                order: 2;
+            }
+
+            .col-future {
+                order: 3;
+            }
+
+            .mobile-label {
+                display: block; /* Labels anzeigen */
+            }
+            
+            .col-past::before { content: "⬅️ "; }
+            .col-future::before { content: "➡️ "; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Zeitstrahl: Vergangenheit & Zukunft</h1>
+    
+    <div class="intro">
+        Der Satz in der Mitte steht im <strong>Präsens</strong>.
+        Wählen Sie links die korrekte Form für <strong>Gestern (Vergangenheit)</strong> und rechts für <strong>Morgen (Zukunft)</strong>.
+    </div>
+
+    <div class="timeline-container" id="timeline">
+        <!-- Header -->
+        <div class="header-row">
+            <div>⬅️ Вчера (Gestern)</div>
+            <div>Сегодня (Heute)</div>
+            <div>Завтра (Morgen) ➡️</div>
+        </div>
+
+        <!-- Rows werden per JS generiert -->
+    </div>
+
+    <div class="controls">
+        <button class="btn-reset" onclick="resetAll()">Alles zurücksetzen</button>
+        <button class="btn-solve" onclick="showSolutions()">Lösungen anzeigen</button>
+    </div>
+</div>
+
+<script>
+    // --- DATEN ---
+    /*
+        subject: Wer? (Mir, Uns...)
+        object: Was? (Pass, Tasche...) - bestimmt das Genus!
+        present: Kompletter Satz im Präsens (z.B. "Мне нужен паспорт")
+        correctPast: Die korrekte Form (z.B. "нужен был")
+        correctFuture: Die korrekte Form (z.B. "нужен будет")
+    */
+    const tasks = [
+        {
+            subject: "Мне",
+            object: "паспорт (m)",
+            present: "Мне нужен паспорт.",
+            correctPast: "нужен был",
+            correctFuture: "нужен будет"
+        },
+        {
+            subject: "Нам",
+            object: "сумка (f)",
+            present: "Нам нужна сумка.",
+            correctPast: "нужна была",
+            correctFuture: "нужна будет"
+        },
+        {
+            subject: "Ему",
+            object: "время (n)",
+            present: "Ему нужно время.",
+            correctPast: "нужно было",
+            correctFuture: "нужно будет"
+        },
+        {
+            subject: "Ей",
+            object: "очки (pl)",
+            present: "Ей нужны очки.",
+            correctPast: "нужны были",
+            correctFuture: "нужны будут"
+        },
+        {
+            subject: "Вам",
+            object: "врач (m)",
+            present: "Вам нужен врач?",
+            correctPast: "нужен был",
+            correctFuture: "нужен будет"
+        },
+        {
+            subject: "Им",
+            object: "помощь (f)",
+            present: "Им нужна помощь.",
+            correctPast: "нужна была",
+            correctFuture: "нужна будет"
+        },
+        {
+            subject: "Мне",
+            object: "такси (n)",
+            present: "Мне нужно такси.",
+            correctPast: "нужно было",
+            correctFuture: "нужно будет"
+        },
+        {
+            subject: "Тебе",
+            object: "деньги (pl)",
+            present: "Тебе нужны деньги?",
+            correctPast: "нужны были",
+            correctFuture: "нужны будут"
+        }
+    ];
+
+    // Optionen für die Dropdowns (alle möglichen Kombinationen)
+    const pastOptions = ["---", "нужен был", "нужна была", "нужно было", "нужны были"];
+    const futureOptions = ["---", "нужен будет", "нужна будет", "нужно будет", "нужны будут"];
+
+    const timelineContainer = document.getElementById('timeline');
+
+    // --- INITIALISIERUNG ---
+    function init() {
+        renderRows();
+    }
+
+    function renderRows() {
+        // Bestehende Rows löschen (außer Header)
+        const existingRows = timelineContainer.querySelectorAll('.time-row');
+        existingRows.forEach(row => row.remove());
+
+        tasks.forEach((task, index) => {
+            const row = document.createElement('div');
+            row.className = 'time-row';
+
+            // --- 1. VERGANGENHEIT (Links / Unten Mobil) ---
+            const pastCol = document.createElement('div');
+            pastCol.className = 'col col-past';
+            
+            pastCol.innerHTML = `
+                <div class="mobile-label">Gestern (Вчера)</div>
+                <span class="sentence-part">Вчера ${task.subject.toLowerCase()}...</span>
+            `;
+            const selectPast = createSelect(pastOptions, task.correctPast);
+            pastCol.appendChild(selectPast);
+            pastCol.insertAdjacentHTML('beforeend', `<span class="sentence-part" style="margin-top:5px">... ${task.object.split(' ')[0]}.</span>`);
+            
+            // --- 2. PRÄSENS (Mitte / Oben Mobil) ---
+            const presentCol = document.createElement('div');
+            presentCol.className = 'col col-present';
+            presentCol.innerHTML = `
+                <div class="mobile-label">Heute (Сегодня)</div>
+                ${task.present}
+            `;
+
+            // --- 3. ZUKUNFT (Rechts / Unten Mobil) ---
+            const futureCol = document.createElement('div');
+            futureCol.className = 'col col-future';
+            
+            futureCol.innerHTML = `
+                <div class="mobile-label">Morgen (Завтра)</div>
+                <span class="sentence-part">Завтра ${task.subject.toLowerCase()}...</span>
+            `;
+            const selectFuture = createSelect(futureOptions, task.correctFuture);
+            futureCol.appendChild(selectFuture);
+            futureCol.insertAdjacentHTML('beforeend', `<span class="sentence-part" style="margin-top:5px">... ${task.object.split(' ')[0]}.</span>`);
+
+            // Zusammenfügen
+            row.appendChild(pastCol);
+            row.appendChild(presentCol);
+            row.appendChild(futureCol);
+            
+            timelineContainer.appendChild(row);
+        });
+    }
+
+    function createSelect(options, correctAnswer) {
+        const select = document.createElement('select');
+        
+        options.forEach(opt => {
+            const option = document.createElement('option');
+            option.value = opt === "---" ? "" : opt;
+            option.textContent = opt;
+            select.appendChild(option);
+        });
+
+        // Event Listener für Sofort-Feedback
+        select.addEventListener('change', () => {
+            select.classList.remove('correct', 'incorrect');
+            
+            if (select.value === "") return;
+
+            if (select.value === correctAnswer) {
+                select.classList.add('correct');
+            } else {
+                select.classList.add('incorrect');
+            }
+        });
+
+        // Eigenschaft speichern für Lösung-Button
+        select.dataset.correct = correctAnswer;
+
+        return select;
+    }
+
+    // --- CONTROLS ---
+
+    function resetAll() {
+        const selects = document.querySelectorAll('select');
+        selects.forEach(sel => {
+            sel.value = "";
+            sel.classList.remove('correct', 'incorrect');
+        });
+    }
+
+    function showSolutions() {
+        const selects = document.querySelectorAll('select');
+        selects.forEach(sel => {
+            sel.value = sel.dataset.correct;
+            // Visuelles Feedback triggern
+            sel.classList.remove('incorrect');
+            sel.classList.add('correct');
+        });
+    }
+
+    // Start
+    window.addEventListener('DOMContentLoaded', init);
+
+</script>
+
+</body>
+</html>
