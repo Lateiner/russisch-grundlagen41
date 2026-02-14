@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Ampel-Übung: Не надо vs Не нужно</title>
+    <style>
+        :root {
+            --bg-color: #2c3e50;
+            --card-bg: #ecf0f1;
+            --text-main: #333;
+            
+            /* Ampel Farben */
+            --light-off: #444;
+            --red-on: #ff1744;
+            --red-glow: rgba(255, 23, 68, 0.6);
+            --yellow-on: #ffc400;
+            --yellow-glow: rgba(255, 196, 0, 0.6);
+            
+            --success: #4caf50;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin: 0;
+            font-size: 1.8rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .intro {
+            color: #bdc3c7;
+            text-align: center;
+            max-width: 600px;
+            font-size: 1rem;
+            background: rgba(0,0,0,0.2);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        /* --- HAUPTBEREICH: Split Screen --- */
+        .game-area {
+            display: flex;
+            flex-direction: row;
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            overflow: hidden;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            min-height: 400px;
+        }
+
+        /* Linke Seite: Die Situation (Karte) */
+        .scenario-panel {
+            flex: 2;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-right: 2px solid #ddd;
+        }
+
+        .context-label {
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .sentence {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .translation {
+            font-size: 1.1rem;
+            color: #555;
+            font-style: italic;
+            margin-bottom: 25px;
+        }
+
+        .gap {
+            display: inline-block;
+            width: 100px;
+            border-bottom: 3px solid #333;
+        }
+
+        /* Rechte Seite: Die Ampel (Controls) */
+        .traffic-light-panel {
+            flex: 1;
+            background-color: #333;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            gap: 20px;
+            position: relative;
+        }
+
+        /* Das Ampel-Gehäuse */
+        .traffic-light-housing {
+            background-color: #111;
+            padding: 20px;
+            border-radius: 30px;
+            border: 4px solid #555;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+        }
+
+        /* Die Lichter (Buttons) */
+        .light-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: rgba(0,0,0,0.6);
+            font-weight: bold;
+            font-size: 0.9rem;
+            text-align: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Rot */
+        .light-red {
+            background-color: var(--light-off);
+            border-top: 2px solid rgba(0,0,0,0.5);
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+        }
+        
+        .light-red:hover { background-color: #5a1a1a; }
+        
+        .light-red.active {
+            background-color: var(--red-on);
+            box-shadow: 0 0 30px var(--red-glow);
+            transform: scale(1.05);
+            color: white;
+        }
+
+        /* Gelb */
+        .light-yellow {
+            background-color: var(--light-off);
+            border-top: 2px solid rgba(0,0,0,0.5);
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .light-yellow:hover { background-color: #5a4a0a; }
+
+        .light-yellow.active {
+            background-color: var(--yellow-on);
+            box-shadow: 0 0 30px var(--yellow-glow);
+            transform: scale(1.05);
+            color: black;
+        }
+
+        /* Labels neben der Ampel */
+        .light-label {
+            position: absolute;
+            color: white;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            font-weight: bold;
+            left: -80px; /* Links neben der Ampel */
+            width: 70px;
+            text-align: right;
+            opacity: 0.7;
+            display: none; /* Auf mobile ausblenden, Desktop an */
+        }
+        
+        .label-top { top: 50px; }
+        .label-mid { top: 150px; }
+
+
+        /* --- FEEDBACK OVERLAY --- */
+        .feedback-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(255,255,255,0.95);
+            padding: 20px;
+            text-align: center;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-top: 4px solid #ccc;
+        }
+
+        .feedback-overlay.show {
+            transform: translateY(0);
+        }
+
+        .fb-title {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .fb-text {
+            display: block;
+            font-size: 1.1rem;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        button.next-btn {
+            background-color: var(--success);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(76, 175, 80, 0.4);
+        }
+        button.next-btn:hover { transform: scale(1.05); }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+        }
+        .progress-bar {
+            height: 100%;
+            background: var(--success);
+            width: 0%;
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+
+        /* --- RESPONSIVE --- */
+        @media (min-width: 600px) {
+            .light-label { display: block; }
+        }
+
+        @media (max-width: 600px) {
+            .game-area {
+                flex-direction: column;
+            }
+            .scenario-panel {
+                border-right: none;
+                border-bottom: 2px solid #ddd;
+                padding: 20px;
+            }
+            .traffic-light-panel {
+                flex-direction: row; /* Ampel liegt quer auf Handy? Oder besser hochkant lassen? */
+                /* Hochkant ist besser für Ampel-Feeling, aber Platz... */
+                padding: 15px;
+            }
+            .traffic-light-housing {
+                flex-direction: row; /* Ampel liegt quer */
+                padding: 10px 20px;
+            }
+            .light-btn {
+                width: 60px;
+                height: 60px;
+            }
+            /* Overlay muss höher sein auf mobile */
+            .feedback-overlay {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Die russische Ampel</h1>
+    
+    <div class="intro">
+        Entscheiden Sie: Ist es ein <strong>Verbot (Rot)</strong> oder nur ein <strong>Rat/Nicht nötig (Gelb)</strong>?
+        Klicken Sie auf das passende Licht.
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-bar" id="progress"></div>
+    </div>
+
+    <div class="game-area">
+        
+        <!-- Linke Seite: Kontext -->
+        <div class="scenario-panel" id="scenario-panel">
+            <div class="context-label" id="context-label">Situation</div>
+            <div class="sentence" id="sentence">...</div>
+            <div class="translation" id="translation">...</div>
+        </div>
+
+        <!-- Rechte Seite: Ampel -->
+        <div class="traffic-light-panel">
+            <span class="light-label label-top">Не надо<br>(Verbot)</span>
+            <span class="light-label label-mid">Не нужно<br>(Rat)</span>
+
+            <div class="traffic-light-housing">
+                <!-- Rot -->
+                <button class="light-btn light-red" id="btn-red" onclick="checkAnswer('red')">
+                    НЕ НАДО
+                </button>
+                
+                <!-- Gelb -->
+                <button class="light-btn light-yellow" id="btn-yellow" onclick="checkAnswer('yellow')">
+                    НЕ НУЖНО
+                </button>
+            </div>
+        </div>
+
+        <!-- Feedback Overlay (Slide up) -->
+        <div class="feedback-overlay" id="feedback-overlay">
+            <span class="fb-title" id="fb-title"></span>
+            <span class="fb-text" id="fb-text"></span>
+            <button class="next-btn" id="next-btn" onclick="nextQuestion()">Weiter ➡</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- DATEN ---
+    // type: 'red' (ne nada / Verbot) oder 'yellow' (ne nuzhno / Rat)
+    const data = [
+        {
+            context: "Im Museum. Jemand will ein Foto mit Blitz machen.",
+            sentence: "___ фотографировать здесь!",
+            translation: "Hier nicht fotografieren! (Streng verboten)",
+            type: "red",
+            explanation: "Das ist ein striktes Verbot. Man sagt: <b>Не надо</b>."
+        },
+        {
+            context: "Ein Freund will dir beim Abwasch helfen, aber du schaffst es allein.",
+            sentence: "___ мне помогать, я сама.",
+            translation: "Du brauchst mir nicht zu helfen, ich mach das schon.",
+            type: "yellow",
+            explanation: "Es ist nett gemeint, aber nicht nötig. Ein weicher Hinweis: <b>Не нужно</b>."
+        },
+        {
+            context: "Auf der Straße. Ein Kind rennt auf die Fahrbahn.",
+            sentence: "Стой! ___ бежать!",
+            translation: "Halt! Nicht rennen! (Gefahr)",
+            type: "red",
+            explanation: "Gefahr für Leib und Leben! Ein klares Verbot: <b>Не надо</b>."
+        },
+        {
+            context: "Im Geschäft. Die Jacke ist viel zu teuer und hässlich.",
+            sentence: "___ покупать эту куртку.",
+            translation: "Kauf diese Jacke lieber nicht.",
+            type: "yellow",
+            explanation: "Das ist ein Ratschlag unter Freunden. Keine Regel. <b>Не нужно</b>."
+        },
+        {
+            context: "Im Kino. Jemand telefoniert laut.",
+            sentence: "___ говорить громко!",
+            translation: "Nicht laut sprechen! (Stört andere)",
+            type: "red",
+            explanation: "Soziales Verbot. Man stört andere. <b>Не надо</b>."
+        },
+        {
+            context: "Du machst dir Sorgen vor der Prüfung.",
+            sentence: "___ волноваться, ты всё знаешь.",
+            translation: "Du brauchst dich nicht zu sorgen, du weißt alles.",
+            type: "yellow",
+            explanation: "Beruhigung/Rat. Es gibt keinen Grund zur Sorge: <b>Не нужно</b>."
+        },
+        {
+            context: "Jemand will dem Hund Schokolade geben.",
+            sentence: "___ давать собаке шоколад!",
+            translation: "Gib dem Hund keine Schokolade! (Giftig)",
+            type: "red",
+            explanation: "Verbot zum Schutz des Tieres. <b>Не надо</b>."
+        },
+        {
+            context: "Es regnet nur ganz leicht.",
+            sentence: "___ брать зонт, дождь слабый.",
+            translation: "Du brauchst keinen Schirm zu nehmen, es regnet kaum.",
+            type: "yellow",
+            explanation: "Es ist nicht notwendig. <b>Не нужно</b>."
+        }
+    ];
+
+    // State
+    let currentIndex = 0;
+    let isSolved = false;
+
+    // DOM
+    const sentenceEl = document.getElementById('sentence');
+    const translationEl = document.getElementById('translation');
+    const contextEl = document.getElementById('context-label');
+    const btnRed = document.getElementById('btn-red');
+    const btnYellow = document.getElementById('btn-yellow');
+    const overlay = document.getElementById('feedback-overlay');
+    const fbTitle = document.getElementById('fb-title');
+    const fbText = document.getElementById('fb-text');
+    const nextBtn = document.getElementById('next-btn');
+    const progressBar = document.getElementById('progress');
+
+    // --- INITIALISIERUNG ---
+    function init() {
+        currentIndex = 0;
+        loadCard();
+    }
+
+    function loadCard() {
+        isSolved = false;
+        const item = data[currentIndex];
+
+        // UI Reset
+        overlay.classList.remove('show');
+        btnRed.classList.remove('active');
+        btnYellow.classList.remove('active');
+        
+        // Buttons aktivieren
+        btnRed.style.opacity = "1";
+        btnYellow.style.opacity = "1";
+        btnRed.style.cursor = "pointer";
+        btnYellow.style.cursor = "pointer";
+
+        // Progress
+        const pct = (currentIndex / data.length) * 100;
+        progressBar.style.width = `${pct}%`;
+
+        // Text setzen
+        contextEl.textContent = item.context;
+        // Lücke einfügen
+        sentenceEl.innerHTML = item.sentence.replace("___", "<span class='gap'></span>");
+        translationEl.textContent = item.translation;
+    }
+
+    // --- LOGIK ---
+    function checkAnswer(choice) {
+        if (isSolved) return;
+        isSolved = true;
+
+        const item = data[currentIndex];
+        
+        // Ampel einschalten
+        if (choice === 'red') {
+            btnRed.classList.add('active');
+            btnYellow.style.opacity = "0.3"; // Anderes Licht dimmen
+        } else {
+            btnYellow.classList.add('active');
+            btnRed.style.opacity = "0.3";
+        }
+
+        // Lücke füllen
+        const correctWord = item.type === 'red' ? "Не надо" : "Не нужно";
+        const gap = document.querySelector('.gap');
+        
+        // Feedback Text vorbereiten
+        let isCorrect = (choice === item.type);
+        
+        if (isCorrect) {
+            fbTitle.textContent = "Richtig!";
+            fbTitle.style.color = "var(--success)";
+            gap.style.borderBottomColor = "var(--success)";
+            gap.style.color = "var(--success)";
+        } else {
+            fbTitle.textContent = "Leider falsch.";
+            fbTitle.style.color = "#d32f2f";
+            gap.style.borderBottomColor = "#d32f2f";
+            gap.style.color = "#d32f2f";
+        }
+        
+        // Wort in Lücke schreiben
+        gap.textContent = correctWord;
+        gap.style.borderBottom = "none";
+        gap.style.fontWeight = "bold";
+
+        fbText.innerHTML = item.explanation;
+
+        // Overlay anzeigen
+        overlay.classList.add('show');
+
+        // Letzte Frage?
+        if (currentIndex >= data.length - 1) {
+            nextBtn.textContent = "Spiel beenden 🎉";
+            nextBtn.onclick = () => {
+                location.reload(); // Oder Neustart Logik
+            };
+            progressBar.style.width = "100%";
+        }
+    }
+
+    function nextQuestion() {
+        currentIndex++;
+        if (currentIndex < data.length) {
+            loadCard();
+        }
+    }
+
+    // Start
+    window.addEventListener('DOMContentLoaded', init);
+
+</script>
+
+</body>
+</html>
