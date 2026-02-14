@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Trainer: Wortwahl</title>
+    <style>
+        :root {
+            --primary: #3f51b5;
+            --bg-color: #f4f4f9;
+            --card-bg: #ffffff;
+            --success: #4caf50;
+            --error: #f44336;
+            --text: #333;
+            --light-gray: #e0e0e0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-top: 0;
+            font-size: 1.8rem;
+        }
+
+        .intro {
+            background-color: #e8eaf6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            text-align: center;
+            color: #555;
+            line-height: 1.5;
+        }
+
+        /* --- EXERCISE LIST --- */
+        .exercise-list {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .task-card {
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            transition: transform 0.2s;
+        }
+
+        .sentence-frame {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .gap-placeholder {
+            border-bottom: 2px solid var(--primary);
+            width: 100px;
+            display: inline-block;
+            text-align: center;
+            color: #777;
+            font-weight: normal;
+            font-size: 1rem;
+        }
+
+        /* Options Grid */
+        .options-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .word-btn {
+            background-color: #f5f5f5;
+            border: 2px solid var(--light-gray);
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+            min-width: 120px;
+            text-align: center;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .word-btn:hover {
+            border-color: var(--primary);
+            background-color: #e8eaf6;
+        }
+
+        .word-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Feedback States */
+        .word-btn.correct {
+            background-color: var(--success);
+            border-color: var(--success);
+            color: white;
+            pointer-events: none;
+        }
+
+        .word-btn.incorrect {
+            background-color: var(--error);
+            border-color: var(--error);
+            color: white;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .word-btn.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* Result Message */
+        .result-msg {
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 1rem;
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        .result-msg.success { color: var(--success); display: block; }
+        .result-msg.error { color: var(--error); display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- CONTROLS --- */
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        button.control-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            transition: opacity 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        button.control-btn:hover { opacity: 0.9; }
+
+        .btn-reset { background-color: #757575; }
+        .btn-solve { background-color: #ff9800; }
+
+        /* Responsive */
+        @media (max-width: 500px) {
+            .options-container {
+                flex-direction: column;
+            }
+            .word-btn {
+                width: 100%;
+            }
+            .sentence-frame {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Welches Wort passt?</h1>
+    
+    <div class="intro">
+        Schauen Sie sich den Satzanfang genau an. Achten Sie auf das Wort 
+        (<em>нужен, нужна, нужно</em> oder <em>нужны</em>) und wählen Sie das Substantiv, das dazu passt.
+    </div>
+
+    <div class="exercise-list" id="task-container">
+        <!-- Aufgaben werden hier generiert -->
+    </div>
+
+    <div class="controls">
+        <button class="control-btn btn-reset" onclick="resetAll()">Alles zurücksetzen</button>
+        <button class="control-btn btn-solve" onclick="solveAll()">Lösungen anzeigen</button>
+    </div>
+</div>
+
+<script>
+    // --- DATEN ---
+    /* 
+       Struktur: 
+       phrase: Der Satzanfang (z.B. "Мне нужен...")
+       targetGender: Das gesuchte Geschlecht (m, f, n, pl) für die Logik (optional)
+       options: Array von Objekten { text: "Wort", isCorrect: true/false, feedback: "Erklärung" }
+    */
+    const tasks = [
+        {
+            phrase: "Мне <u>нужно</u> ...",
+            options: [
+                { text: "телефон", isCorrect: false, feedback: "Falsch. Телефон ist männlich (нужен)." },
+                { text: "время", isCorrect: true, feedback: "Richtig! Время ist sächlich (нужно)." },
+                { text: "сумка", isCorrect: false, feedback: "Falsch. Сумка ist weiblich (нужна)." }
+            ]
+        },
+        {
+            phrase: "Мне <u>нужен</u> ...",
+            options: [
+                { text: "билет", isCorrect: true, feedback: "Richtig! Билет ist männlich." },
+                { text: "виза", isCorrect: false, feedback: "Falsch. Виза ist weiblich." },
+                { text: "фото", isCorrect: false, feedback: "Falsch. Фото ist sächlich." }
+            ]
+        },
+        {
+            phrase: "Нам <u>нужны</u> ...",
+            options: [
+                { text: "паспорт", isCorrect: false, feedback: "Falsch. Einzahl (m)." },
+                { text: "деньги", isCorrect: true, feedback: "Richtig! Деньги ist Plural." },
+                { text: "такси", isCorrect: false, feedback: "Falsch. Einzahl (n)." }
+            ]
+        },
+        {
+            phrase: "Тебе <u>нужна</u> ...",
+            options: [
+                { text: "помощь", isCorrect: true, feedback: "Richtig! Помощь ist weiblich." },
+                { text: "совет", isCorrect: false, feedback: "Falsch. Совет ist männlich." },
+                { text: "очки", isCorrect: false, feedback: "Falsch. Очки ist Plural." }
+            ]
+        },
+        {
+            phrase: "Им <u>нужно</u> ...",
+            options: [
+                { text: "машина", isCorrect: false, feedback: "Falsch. (f)" },
+                { text: "молоко", isCorrect: true, feedback: "Richtig! Молоко ist sächlich." },
+                { text: "ключи", isCorrect: false, feedback: "Falsch. (pl)" }
+            ]
+        },
+        {
+            phrase: "Мне <u>нужен</u> ...",
+            options: [
+                { text: "ручка", isCorrect: false, feedback: "Falsch. (f)" },
+                { text: "яблоко", isCorrect: false, feedback: "Falsch. (n)" },
+                { text: "врач", isCorrect: true, feedback: "Richtig! Врач ist männlich." }
+            ]
+        },
+        {
+            phrase: "Вам <u>нужны</u> ...",
+            options: [
+                { text: "документы", isCorrect: true, feedback: "Richtig! Plural." },
+                { text: "виза", isCorrect: false, feedback: "Falsch. (f)" },
+                { text: "билет", isCorrect: false, feedback: "Falsch. (m)" }
+            ]
+        },
+        {
+            phrase: "Ему <u>нужна</u> ...",
+            options: [
+                { text: "телефон", isCorrect: false, feedback: "Falsch. (m)" },
+                { text: "куртка", isCorrect: true, feedback: "Richtig! Куртка ist weiblich." },
+                { text: "пальто", isCorrect: false, feedback: "Falsch. (n)" }
+            ]
+        },
+        {
+            phrase: "Нам <u>нужно</u> ...",
+            options: [
+                { text: "отдых", isCorrect: false, feedback: "Falsch. (m)" },
+                { text: "такси", isCorrect: true, feedback: "Richtig! Такси ist sächlich." },
+                { text: "друзья", isCorrect: false, feedback: "Falsch. (pl)" }
+            ]
+        },
+        {
+            phrase: "Мне <u>нужен</u> ...",
+            options: [
+                { text: "интернет", isCorrect: true, feedback: "Richtig! Интернет ist männlich." },
+                { text: "вода", isCorrect: false, feedback: "Falsch. (f)" },
+                { text: "время", isCorrect: false, feedback: "Falsch. (n)" }
+            ]
+        }
+    ];
+
+    const container = document.getElementById('task-container');
+
+    // --- INITIALISIERUNG ---
+    function init() {
+        renderTasks();
+    }
+
+    function renderTasks() {
+        container.innerHTML = "";
+
+        tasks.forEach((task, index) => {
+            // Card Container
+            const card = document.createElement('div');
+            card.className = 'task-card';
+            card.id = `task-${index}`;
+
+            // Satz-Rahmen
+            const sentenceDiv = document.createElement('div');
+            sentenceDiv.className = 'sentence-frame';
+            // Wir fügen HTML ein, damit <u> funktioniert
+            sentenceDiv.innerHTML = `<span style="color:#333; font-weight:normal;">${index + 1}.</span> ${task.phrase}`; 
+            card.appendChild(sentenceDiv);
+
+            // Optionen Container
+            const optionsDiv = document.createElement('div');
+            optionsDiv.className = 'options-container';
+
+            // Buttons erstellen (Zufällige Reihenfolge wäre möglich, hier nehmen wir die definierte)
+            // Um Schummeln zu erschweren, könnte man die Optionen hier mischen.
+            // Wir mischen sie für Abwechslung.
+            const shuffledOptions = [...task.options].sort(() => Math.random() - 0.5);
+
+            shuffledOptions.forEach(opt => {
+                const btn = document.createElement('div');
+                btn.className = 'word-btn';
+                btn.textContent = opt.text;
+                // Klick Event
+                btn.onclick = () => checkAnswer(btn, opt, index);
+                optionsDiv.appendChild(btn);
+            });
+
+            card.appendChild(optionsDiv);
+
+            // Feedback Nachricht Container
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'result-msg';
+            msgDiv.id = `msg-${index}`;
+            card.appendChild(msgDiv);
+
+            container.appendChild(card);
+        });
+    }
+
+    // --- LOGIK ---
+
+    function checkAnswer(btnElement, optionData, taskIndex) {
+        const card = document.getElementById(`task-${taskIndex}`);
+        const msgDiv = document.getElementById(`msg-${taskIndex}`);
+        const allBtns = card.querySelectorAll('.word-btn');
+
+        if (optionData.isCorrect) {
+            // Richtig
+            btnElement.classList.add('correct');
+            msgDiv.textContent = optionData.feedback;
+            msgDiv.className = 'result-msg success';
+            
+            // Andere Buttons deaktivieren
+            allBtns.forEach(b => {
+                if (b !== btnElement) b.classList.add('disabled');
+            });
+        } else {
+            // Falsch
+            btnElement.classList.add('incorrect');
+            // Optional: Fehlermeldung anzeigen?
+            // User wollte "Sofort-Feedback". Rot werden reicht oft, aber Text hilft beim Lernen.
+            // Wir zeigen die Fehlermeldung kurz an oder dauerhaft bis zur nächsten Wahl?
+            // Hier: Anzeigen. User kann dann weiterklicken.
+            msgDiv.textContent = optionData.feedback;
+            msgDiv.className = 'result-msg error';
+        }
+    }
+
+    function resetAll() {
+        renderTasks(); // Einfachste Methode: Neu rendern (mischt auch neu)
+    }
+
+    function solveAll() {
+        // Durch alle Tasks iterieren
+        tasks.forEach((task, index) => {
+            const card = document.getElementById(`task-${index}`);
+            const allBtns = card.querySelectorAll('.word-btn');
+            const msgDiv = document.getElementById(`msg-${index}`);
+
+            // Reset UI first within card
+            allBtns.forEach(b => b.className = 'word-btn disabled'); // Alle deaktivieren
+            
+            // Richtigen Button finden und markieren
+            allBtns.forEach(b => {
+                // Wir müssen den Text vergleichen, da wir gemischt haben
+                // Hinweis: Das ist nicht ultra-performant bei vielen Daten, aber hier ok.
+                const originalOpt = task.options.find(o => o.text === b.textContent);
+                if (originalOpt && originalOpt.isCorrect) {
+                    b.classList.remove('disabled');
+                    b.classList.add('correct');
+                    msgDiv.textContent = originalOpt.feedback;
+                    msgDiv.className = 'result-msg success';
+                }
+            });
+        });
+    }
+
+    // Start
+    window.addEventListener('DOMContentLoaded', init);
+
+</script>
+
+</body>
+</html>
