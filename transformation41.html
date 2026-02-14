@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Drill: Dativ-Transformation</title>
+    <style>
+        :root {
+            --primary: #3f51b5;
+            --primary-dark: #303f9f;
+            --bg-color: #f4f4f9;
+            --card-bg: #ffffff;
+            --success: #4caf50;
+            --error: #f44336;
+            --text: #333;
+            --chip-bg: #e3f2fd;
+            --chip-border: #bbdefb;
+            --chip-text: #1565c0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-top: 0;
+            font-size: 1.6rem;
+        }
+
+        .intro {
+            background-color: #e8eaf6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            color: #555;
+            line-height: 1.5;
+            border-left: 5px solid var(--primary);
+        }
+
+        /* --- EXERCISE ITEM --- */
+        .exercise-card {
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            background-color: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .source-sentence {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+            color: #444;
+        }
+
+        .source-highlight {
+            color: var(--primary);
+            text-decoration: underline;
+        }
+
+        /* Bereich für die Antwort */
+        .answer-zone {
+            min-height: 50px;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            background-color: #fafafa;
+            transition: border-color 0.3s, background-color 0.3s;
+            cursor: pointer;
+        }
+
+        .answer-zone.active {
+            border-color: var(--primary);
+            background-color: #f0f4ff;
+        }
+
+        .answer-zone.correct {
+            border-color: var(--success);
+            background-color: #e8f5e9;
+        }
+
+        .answer-zone.incorrect {
+            border-color: var(--error);
+            background-color: #ffebee;
+        }
+
+        .answer-placeholder {
+            color: #aaa;
+            font-style: italic;
+            pointer-events: none;
+        }
+
+        /* Wort-Bausteine */
+        .word-bank {
+            margin-top: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .word-chip {
+            background-color: var(--chip-bg);
+            border: 1px solid var(--chip-border);
+            color: var(--chip-text);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            user-select: none;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .word-chip:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+        }
+
+        .word-chip:active {
+            transform: scale(0.95);
+        }
+
+        /* Wenn ein Wort verwendet wurde */
+        .word-chip.used {
+            opacity: 0.3;
+            pointer-events: none;
+            background-color: #ddd;
+            border-color: #ccc;
+            color: #888;
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* Wort im Antwortbereich */
+        .answer-chip {
+            background-color: var(--primary);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            animation: popIn 0.2s;
+        }
+
+        .answer-chip:hover {
+            background-color: var(--error); /* Signalisiert "Entfernen" */
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* --- CONTROLS per Card --- */
+        .card-controls {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            border-top: 1px solid #f0f0f0;
+            padding-top: 15px;
+        }
+
+        button.mini-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            transition: opacity 0.2s;
+            flex: 1;
+        }
+
+        button.mini-btn:hover { opacity: 0.9; }
+
+        .btn-check { background-color: var(--primary); }
+        .btn-reset-card { background-color: #757575; }
+        .btn-solution { background-color: #ff9800; }
+
+        .feedback-text {
+            margin-top: 10px;
+            font-weight: bold;
+            min-height: 1.2em;
+        }
+        
+        .text-success { color: var(--success); }
+        .text-error { color: var(--error); }
+
+        /* Responsive */
+        @media (max-width: 500px) {
+            .card-controls {
+                flex-direction: column;
+            }
+            .source-sentence {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Transformations-Drill: Dativ</h1>
+    
+    <div class="intro">
+        Formen Sie die Sätze um. Machen Sie aus dem Subjekt (Nominativ) das Ziel der Notwendigkeit (Dativ).<br>
+        <strong>Beispiel:</strong> <em>Ich (Я) will schlafen</em> ➔ <em>Mir (Мне) ist nötig zu schlafen.</em>
+    </div>
+
+    <div id="exercises-container">
+        <!-- Übungen werden hier generiert -->
+    </div>
+
+</div>
+
+<script>
+    // --- DATEN ---
+    /*
+        source: Der Ausgangssatz
+        targetParts: Die Wörter der korrekten Lösung in richtiger Reihenfolge
+        distractors: (Optional) Falsche Wörter zur Verwirrung (hier leer gelassen für Fokus auf Struktur)
+    */
+    const exercises = [
+        {
+            source: "Я хочу спать. (Ich will...)",
+            targetParts: ["Мне", "надо", "спать."],
+            explanation: "Я (Ich) ➔ Мне (Mir)"
+        },
+        {
+            source: "Анна хочет домой. (Anna will...)",
+            targetParts: ["Анне", "нужно", "домой."],
+            explanation: "Анна ➔ Анне (Endung -е)"
+        },
+        {
+            source: "Ты хочешь есть? (Willst du...?)",
+            targetParts: ["Тебе", "надо", "поесть?"],
+            explanation: "Ты (Du) ➔ Тебе (Dir)"
+        },
+        {
+            source: "Мы работаем. (Wir arbeiten.)",
+            targetParts: ["Нам", "нужно", "работать."],
+            explanation: "Мы (Wir) ➔ Нам (Uns)"
+        },
+        {
+            source: "Он должен идти. (Er muss gehen.)",
+            targetParts: ["Ему", "надо", "идти."],
+            explanation: "Он (Er) ➔ Ему (Ihm)"
+        },
+        {
+            source: "Она ищет сумку. (Sie sucht eine Tasche / braucht eine Tasche)",
+            targetParts: ["Ей", "нужна", "сумка."],
+            explanation: "Она (Sie) ➔ Ей (Ihr)"
+        },
+        {
+            source: "Вы хотите отдохнуть? (Wollt ihr...?)",
+            targetParts: ["Вам", "надо", "отдохнуть?"],
+            explanation: "Вы (Ihr/Sie) ➔ Вам (Euch/Ihnen)"
+        },
+        {
+            source: "Они хотят деньги. (Sie wollen Geld.)",
+            targetParts: ["Им", "нужны", "деньги."],
+            explanation: "Они (Sie Pl.) ➔ Им (Ihnen)"
+        },
+        {
+            source: "Борис хочет пить. (Boris will trinken.)",
+            targetParts: ["Борису", "нужно", "пить."],
+            explanation: "Борис ➔ Борису (Endung -у)"
+        },
+        {
+            source: "Кто это? (Wer ist das? / Wer braucht das?)",
+            targetParts: ["Кому", "это", "нужно?"],
+            explanation: "Кто (Wer) ➔ Кому (Wem)"
+        }
+    ];
+
+    const container = document.getElementById('exercises-container');
+
+    // --- INITIALISIERUNG ---
+    function init() {
+        exercises.forEach((ex, index) => createExerciseCard(ex, index));
+    }
+
+    function createExerciseCard(ex, index) {
+        const card = document.createElement('div');
+        card.className = 'exercise-card';
+        card.id = `card-${index}`;
+
+        // 1. Source Sentence
+        const sourceDiv = document.createElement('div');
+        sourceDiv.className = 'source-sentence';
+        sourceDiv.innerHTML = `${index + 1}. ${highlightPronoun(ex.source)}`;
+        card.appendChild(sourceDiv);
+
+        // 2. Answer Zone
+        const answerZone = document.createElement('div');
+        answerZone.className = 'answer-zone';
+        answerZone.id = `zone-${index}`;
+        answerZone.innerHTML = '<span class="answer-placeholder">Tippen Sie die Wörter an...</span>';
+        
+        // Klick auf Antwortzone entfernt das letzte Wort (optional, hier nicht implementiert, da Chips klickbar sind)
+        card.appendChild(answerZone);
+
+        // 3. Word Bank (Mischen)
+        const wordBank = document.createElement('div');
+        wordBank.className = 'word-bank';
+        wordBank.id = `bank-${index}`;
+        
+        // Wörter mischen
+        let words = [...ex.targetParts];
+        words = shuffleArray(words);
+
+        words.forEach((word, wIndex) => {
+            const chip = document.createElement('div');
+            chip.className = 'word-chip';
+            chip.textContent = word;
+            chip.dataset.word = word;
+            chip.dataset.id = `${index}-${wIndex}`; // Unique ID
+            
+            chip.onclick = () => moveWordToAnswer(index, chip);
+            wordBank.appendChild(chip);
+        });
+        card.appendChild(wordBank);
+
+        // 4. Feedback
+        const feedback = document.createElement('div');
+        feedback.className = 'feedback-text';
+        feedback.id = `feedback-${index}`;
+        card.appendChild(feedback);
+
+        // 5. Controls
+        const controls = document.createElement('div');
+        controls.className = 'card-controls';
+        
+        const btnCheck = document.createElement('button');
+        btnCheck.className = 'mini-btn btn-check';
+        btnCheck.textContent = 'Überprüfen';
+        btnCheck.onclick = () => checkAnswer(index);
+
+        const btnReset = document.createElement('button');
+        btnReset.className = 'mini-btn btn-reset-card';
+        btnReset.textContent = 'Zurücksetzen';
+        btnReset.onclick = () => resetCard(index);
+
+        const btnSolve = document.createElement('button');
+        btnSolve.className = 'mini-btn btn-solution';
+        btnSolve.textContent = 'Lösung';
+        btnSolve.onclick = () => showSolution(index);
+
+        controls.appendChild(btnCheck);
+        controls.appendChild(btnReset);
+        controls.appendChild(btnSolve);
+        card.appendChild(controls);
+
+        container.appendChild(card);
+    }
+
+    // --- LOGIK ---
+
+    function moveWordToAnswer(cardIndex, chipElement) {
+        const zone = document.getElementById(`zone-${cardIndex}`);
+        const placeholder = zone.querySelector('.answer-placeholder');
+        
+        // Placeholder entfernen
+        if (placeholder) placeholder.remove();
+
+        // Neuen Chip für Antwort erstellen
+        const answerChip = document.createElement('div');
+        answerChip.className = 'answer-chip';
+        answerChip.textContent = chipElement.dataset.word;
+        answerChip.dataset.refId = chipElement.dataset.id; // Referenz zum Bank-Chip
+        
+        // Klick auf Antwort-Chip -> zurück zur Bank
+        answerChip.onclick = () => returnWordToBank(cardIndex, answerChip, chipElement);
+
+        zone.appendChild(answerChip);
+
+        // Original Chip ausgrauen
+        chipElement.classList.add('used');
+    }
+
+    function returnWordToBank(cardIndex, answerChip, bankChip) {
+        answerChip.remove();
+        bankChip.classList.remove('used');
+        
+        // Placeholder wiederherstellen, wenn leer
+        const zone = document.getElementById(`zone-${cardIndex}`);
+        if (zone.children.length === 0) {
+            zone.innerHTML = '<span class="answer-placeholder">Tippen Sie die Wörter an...</span>';
+        }
+        
+        // Feedback zurücksetzen
+        clearFeedback(cardIndex);
+    }
+
+    function checkAnswer(index) {
+        const ex = exercises[index];
+        const zone = document.getElementById(`zone-${index}`);
+        const currentWords = Array.from(zone.querySelectorAll('.answer-chip')).map(c => c.textContent);
+        const feedbackEl = document.getElementById(`feedback-${index}`);
+
+        clearFeedback(index);
+
+        if (currentWords.length === 0) {
+            feedbackEl.innerHTML = "<span class='text-error'>Bitte wählen Sie Wörter aus.</span>";
+            return;
+        }
+
+        const userSentence = currentWords.join(' ');
+        const correctSentence = ex.targetParts.join(' ');
+
+        if (userSentence === correctSentence) {
+            zone.classList.add('correct');
+            feedbackEl.innerHTML = `<span class='text-success'>Richtig! ${ex.explanation}</span>`;
+        } else {
+            zone.classList.add('incorrect');
+            feedbackEl.innerHTML = "<span class='text-error'>Noch nicht ganz richtig. Überprüfen Sie die Reihenfolge oder Wortwahl.</span>";
+        }
+    }
+
+    function resetCard(index) {
+        const zone = document.getElementById(`zone-${index}`);
+        const bank = document.getElementById(`bank-${index}`);
+        
+        // Zone leeren
+        zone.innerHTML = '<span class="answer-placeholder">Tippen Sie die Wörter an...</span>';
+        zone.className = 'answer-zone'; // Klassen resetten
+
+        // Bank Chips reaktivieren
+        const chips = bank.querySelectorAll('.word-chip');
+        chips.forEach(c => c.classList.remove('used'));
+
+        clearFeedback(index);
+    }
+
+    function showSolution(index) {
+        resetCard(index); // Erst resetten
+        
+        const ex = exercises[index];
+        const bank = document.getElementById(`bank-${index}`);
+        
+        // Wir simulieren das Klicken in der richtigen Reihenfolge
+        ex.targetParts.forEach(word => {
+            // Finde den passenden unbenutzten Chip in der Bank
+            // Hinweis: Wir müssen aufpassen bei doppelten Wörtern.
+            const chips = Array.from(bank.querySelectorAll(`.word-chip:not(.used)`));
+            const matchingChip = chips.find(c => c.dataset.word === word);
+            
+            if (matchingChip) {
+                moveWordToAnswer(index, matchingChip);
+            }
+        });
+
+        // Visuelles Feedback
+        const zone = document.getElementById(`zone-${index}`);
+        zone.classList.add('correct');
+        const feedbackEl = document.getElementById(`feedback-${index}`);
+        feedbackEl.innerHTML = `<span class='text-success'>Lösung angezeigt: ${ex.explanation}</span>`;
+    }
+
+    function clearFeedback(index) {
+        const zone = document.getElementById(`zone-${index}`);
+        zone.classList.remove('correct', 'incorrect');
+        document.getElementById(`feedback-${index}`).innerHTML = "";
+    }
+
+    // Hilfsfunktion: Array mischen
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    // Hilfsfunktion: Pronomen im Quellsatz hervorheben (einfachste Logik)
+    function highlightPronoun(text) {
+        // Liste der Keywords zum unterstreichen (optional)
+        const keywords = ["Я", "Ты", "Он", "Она", "Мы", "Вы", "Они", "Анна", "Борис", "Кто"];
+        let formatted = text;
+        keywords.forEach(kw => {
+            // Nur am Satzanfang oder mit Leerzeichen davor, um Wortteile zu vermeiden
+            formatted = formatted.replace(new RegExp(`(^|\\s)(${kw})`, 'g'), '$1<u>$2</u>');
+        });
+        return formatted;
+    }
+
+    // Start
+    window.addEventListener('DOMContentLoaded', init);
+
+</script>
+
+</body>
+</html>
