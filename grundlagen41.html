@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russische Grammatik: нужно, надо und Varianten</title>
+    <!-- Polyfill für Touch-Geräte -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #3f51b5;
+            --success-color: #4caf50;
+            --error-color: #f44336;
+            --info-color: #ff9800;
+            --bg-color: #f4f4f9;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background-color: var(--bg-color);
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1, h2, h3 {
+            color: var(--primary-color);
+        }
+
+        .intro-box {
+            background-color: #e8eaf6;
+            border-left: 5px solid var(--primary-color);
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        .rule-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            background: white;
+        }
+
+        .rule-table th, .rule-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .rule-table th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* Exercise Card Styling */
+        .exercise-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .exercise-header {
+            border-bottom: 2px solid #eee;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+        }
+
+        .question-area {
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+
+        /* Inputs & Selects */
+        select {
+            padding: 5px;
+            font-size: 1em;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .radio-group label {
+            display: block;
+            margin: 8px 0;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 4px;
+            background: #f9f9f9;
+            border: 1px solid #eee;
+        }
+
+        .radio-group label:hover {
+            background: #eee;
+        }
+
+        .radio-group input {
+            margin-right: 10px;
+        }
+
+        /* Drag and Drop Styling */
+        .draggable-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #eee;
+            border-radius: 4px;
+            min-height: 50px;
+        }
+
+        .draggable-item {
+            background: white;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 5px 15px;
+            border-radius: 20px;
+            cursor: move;
+            user-select: none;
+            font-weight: bold;
+        }
+
+        .dropzone-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .dropzone {
+            flex: 1;
+            min-width: 150px;
+            min-height: 100px;
+            border: 2px dashed #ccc;
+            border-radius: 4px;
+            padding: 10px;
+            background: #fafafa;
+        }
+
+        .dropzone h4 {
+            margin-top: 0;
+            text-align: center;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        /* Sentence Builder specific */
+        .sentence-builder-zone {
+            display: flex;
+            gap: 5px;
+            min-height: 50px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* Feedback Classes */
+        .correct {
+            border-color: var(--success-color) !important;
+            background-color: #e8f5e9 !important;
+        }
+        
+        .incorrect {
+            border-color: var(--error-color) !important;
+            background-color: #ffebee !important;
+        }
+
+        .text-correct { color: var(--success-color); font-weight: bold; }
+        .text-wrong { color: var(--error-color); font-weight: bold; }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            transition: opacity 0.2s;
+        }
+
+        button:hover { opacity: 0.9; }
+
+        .btn-check { background-color: var(--primary-color); }
+        .btn-reset { background-color: #9e9e9e; }
+        .btn-solve { background-color: var(--info-color); }
+
+        .feedback-msg {
+            margin-top: 10px;
+            min-height: 24px;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .dropzone-container { flex-direction: column; }
+            .btn-group { flex-direction: column; }
+            button { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russische Grammatik: нужно, надо & Varianten</h1>
+
+    <div class="intro-box">
+        <h2>Einführung</h2>
+        <p>Um im Russischen auszudrücken, dass man etwas braucht oder etwas tun muss, verwendet man bestimmte Wörter, die sich nach der Grammatik richten.</p>
+        
+        <h3>1. Ich brauche etwas (Substantiv)</h3>
+        <p>Hier richtet sich das Wort nach dem Geschlecht (Genus) und der Zahl (Numerus) des Gegenstandes, der gebraucht wird (Nominativ).</p>
+        <table class="rule-table">
+            <thead>
+                <tr>
+                    <th>Geschlecht</th>
+                    <th>Form</th>
+                    <th>Beispiel</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Männlich (он)</td>
+                    <td><strong>нужен</strong></td>
+                    <td>Мне нужен паспорт. (Ich brauche einen Pass.)</td>
+                </tr>
+                <tr>
+                    <td>Weiblich (она)</td>
+                    <td><strong>нужна</strong></td>
+                    <td>Мне нужна ручка. (Ich brauche einen Stift.)</td>
+                </tr>
+                <tr>
+                    <td>Sächlich (оно)</td>
+                    <td><strong>нужно</strong></td>
+                    <td>Нам нужно время. (Wir brauchen Zeit.)</td>
+                </tr>
+                <tr>
+                    <td>Plural (они)</td>
+                    <td><strong>нужны</strong></td>
+                    <td>Им нужны деньги. (Sie brauchen Geld.)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>2. Man muss etwas tun (Verb)</h3>
+        <p>Wenn ein Verb (Infinitiv) folgt, benutzt man nur die neutralen Formen:</p>
+        <ul>
+            <li><strong>нужно</strong> oder <strong>надо</strong> (Synonyme im positiven Satz).</li>
+            <li>Beispiel: Мне нужно работать. / Мне надо работать. (Ich muss arbeiten.)</li>
+        </ul>
+
+        <h3>3. Verneinung (Unterschied)</h3>
+        <ul>
+            <li><strong>Не надо</strong> + Verb = Verbot ("Tu das nicht!", streng).</li>
+            <li><strong>Не нужно</strong> + Verb = Rat ("Es ist nicht nötig/sinnvoll", weicher).</li>
+        </ul>
+    </div>
+
+    <!-- ÜBUNG 1 -->
+    <div class="exercise-card" id="ex1">
+        <div class="exercise-header">
+            <h3>Aufgabe 1: Männliche Substantive</h3>
+            <p>Wählen Sie die richtige Form aus. <em>(телефон = das Telefon, m.)</em></p>
+        </div>
+        <div class="question-area">
+            <p>Мне ... новый телефон.</p>
+            <div class="radio-group">
+                <label><input type="radio" name="ex1" value="wrong1"> нужна</label>
+                <label><input type="radio" name="ex1" value="correct"> нужен</label>
+                <label><input type="radio" name="ex1" value="wrong2"> нужно</label>
+            </div>
+        </div>
+        <div class="feedback-msg"></div>
+        <div class="btn-group">
+            <button class="btn-check" onclick="checkRadio('ex1', 'correct')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetRadio('ex1')">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveRadio('ex1', 'correct')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- ÜBUNG 2 -->
+    <div class="exercise-card" id="ex2">
+        <div class="exercise-header">
+            <h3>Aufgabe 2: Weibliche Substantive</h3>
+            <p>Wählen Sie die richtige Form aus. <em>(машина = das Auto, f.)</em></p>
+        </div>
+        <div class="question-area">
+            <p>Нам ... большая машина.</p>
+            <div class="radio-group">
+                <label><input type="radio" name="ex2" value="correct"> нужна</label>
+                <label><input type="radio" name="ex2" value="wrong1"> нужен</label>
+                <label><input type="radio" name="ex2" value="wrong2"> нужны</label>
+            </div>
+        </div>
+        <div class="feedback-msg"></div>
+        <div class="btn-group">
+            <button class="btn-check" onclick="checkRadio('ex2', 'correct')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetRadio('ex2')">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveRadio('ex2', 'correct')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- ÜBUNG 3 -->
+    <div class="exercise-card" id="ex3">
+        <div class="exercise-header">
+            <h3>Aufgabe 3: Sächliche Substantive</h3>
+            <p>Wählen Sie die richtige Form aus. <em>(молоко = die Milch, n.)</em></p>
+        </div>
+        <div class="question-area">
+            <p>Кошке ... молоко.</p>
+            <div class="radio-group">
+                <label><input type="radio" name="ex3" value="wrong1"> нужен</label>
+                <label><input type="radio" name="ex3" value="wrong2"> нужна</label>
+                <label><input type="radio" name="ex3" value="correct"> нужно</label>
+            </div>
+        </div>
+        <div class="feedback-msg"></div>
+        <div class="btn-group">
+            <button class="btn-check" onclick="checkRadio('ex3', 'correct')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetRadio('ex3')">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveRadio('ex3', 'correct')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- ÜBUNG 4 -->
+    <div class="exercise-card" id="ex4">
+        <div class="exercise-header">
+            <h3>Aufgabe 4: Plural</h3>
+            <p>Wählen Sie die richtige Form aus. <em>(очки = die Brille, Pl.)</em></p>
+        </div>
+        <div class="question-area">
+            <p>Бабушке ... очки.</p>
+            <div class="radio-group">
+                <label><input type="radio" name="ex4" value="correct"> нужны</label>
+                <label><input type="radio" name="ex4" value="wrong1"> нужно</label>
+                <label><input type="radio" name="ex4" value="wrong2"> нужна</label>
+            </div>
+        </div>
+        <div class="feedback-msg"></div>
+        <div class="btn-group">
+            <button class="btn-check" onclick="checkRadio('ex4', 'correct')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetRadio('ex4')">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveRadio('ex4', 'correct')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- ÜBUNG 5 -->
+    <div class="exercise-card" id="ex5">
+        <div class="exercise-header">
+            <h3>Aufgabe 5: Sortieren (Drag & Drop)</h3>
+            <p>Ziehen Sie die Wörter in die richtige Box, je nachdem, welche Form von "nötig" sie benötigen.</p>
+        </div>
+        
+        <div class="draggable-container" id="source-ex5">
+            <div class="draggable-item" draggable="true" data-category="m">Билет (m)</div>
+            <div class="draggable-item" draggable="true" data-category="f">Виза (f)</div>
+            <div class="draggable-item" draggable="true" data-category="n">Такси (n)</div>
+            <div class="draggable-item" draggable="true" data-category="pl">Деньги (Pl)</div>
+        </div>
+
+        <div class="dropzone-container">
+            <div class="dropzone" data-target="m"><h4>НУЖЕН (m)</h4></div>
+            <div class="dropzone" data-target="f"><h4>НУЖНА (f)</h4></div>
+            <div class="dropzone" data-target="n"><h4>НУЖНО (n)</h4></div>
+            <div class="dropzone" data-target="pl"><h4>НУЖНЫ (Pl)</h4></div>
+        </div>
+
+        <div class="feedback-msg"></div>
+        <div class="btn-group">
+            <button class="btn-check" onclick="checkDragDrop('ex5')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetDragDrop('ex5')">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveDragDrop('ex5')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- ÜBUNG 6 -->
+    <div class="exercise-card" id="ex6">
+        <div class="exercise-header">
+            <h3>Aufgabe 6: Verb / Infinitiv</h3>
+            <p>Welches Wort passt, wenn ein Verb folgt? ("Man muss schlafen")</p>
+        </div>
+        <div class="question-area">
+            <p>Мне ... спать.</p>
+            <div class="radio-group">
+                <label><input type="radio" name="ex6" value="correct"> надо</label>
+                <label><input type="radio" name="ex6" value="wrong1"> нужна</label>
+                <label><input type="radio" name="ex6" value="wrong2"> нужны</label>
+            </div>
+        </div>
+        <div class="feedback-msg"></div>
+        <div class="btn-group">
+            <button class="btn-check" onclick="checkRadio('ex6', 'correct')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetRadio('ex6')">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveRadio('ex6', 'correct')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- ÜBUNG 7 -->
+    <div class="exercise-card" id="ex7">
+        <div class="exercise-header">
+            <h3>Aufgabe 7: Verneinung (Bedeutung)</h3>
+            <p>Sie wollen ein strenges <strong>Verbot</strong> ausdrücken ("Rauch hier nicht!").</p>
+        </div>
+        <div class="question-area">
+            <p>Не ... курить здесь!</p>
+            <div class="radio-group">
+                <label><input type="radio" name="ex7" value="wrong1"> нужно</label>
+                <label><input type="radio" name="ex7" value="correct"> надо</label>
+            </div>
+        </div>
+        <div class="feedback-msg"></div>
+        <div class="btn-group">
+            <button class="btn-check" onclick="checkRadio('ex7', 'correct')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetRadio('ex7')">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveRadio('ex7', 'correct')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- ÜBUNG 8 -->
+    <div class="exercise-card" id="ex8">
+        <div class="exercise-header">
+            <h3>Aufgabe 8: Vergangenheit</h3>
+            <p>Wählen Sie die korrekte Form für die Vergangenheit. <em>(помощь = die Hilfe, f.)</em></p>
+        </div>
+        <div class="question-area">
+            <p>Вчера мне 
+                <select id="sel-ex8">
+                    <option value="">---</option>
+                    <option value="wrong1">нужен был</option>
+                    <option value="correct">нужна была</option>
+                    <option value="wrong2">нужно было</option>
+                </select>
+                помощь.
+            </p>
+        </div>
+        <div class="feedback-msg"></div>
+        <div class="btn-group">
+            <button class="btn-check" onclick="checkSelect('ex8', 'sel-ex8', 'correct')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetSelect('sel-ex8')">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveSelect('sel-ex8', 'correct')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- ÜBUNG 9 -->
+    <div class="exercise-card" id="ex9">
+        <div class="exercise-header">
+            <h3>Aufgabe 9: Satzbau (Drag & Drop)</h3>
+            <p>Bilden Sie den Satz: "Wir müssen Brot kaufen."</p>
+        </div>
+        
+        <div class="draggable-container" id="source-ex9">
+            <div class="draggable-item" draggable="true" data-order="1">Нам</div>
+            <div class="draggable-item" draggable="true" data-order="4">хлеб</div>
+            <div class="draggable-item" draggable="true" data-order="2">нужно</div>
+            <div class="draggable-item" draggable="true" data-order="3">купить</div>
+        </div>
+
+        <div class="sentence-builder-zone" id="target-ex9">
+            <!-- Drop here -->
+        </div>
+
+        <div class="feedback-msg"></div>
+        <div class="btn-group">
+            <button class="btn-check" onclick="checkSentenceOrder('ex9')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetSentenceOrder('ex9')">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveSentenceOrder('ex9')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- ÜBUNG 10 -->
+    <div class="exercise-card" id="ex10">
+        <div class="exercise-header">
+            <h3>Aufgabe 10: Zukunft</h3>
+            <p>Ergänzen Sie den Satz. <em>(врач = der Arzt, m.)</em></p>
+        </div>
+        <div class="question-area">
+            <p>Завтра мне 
+                <select id="sel-ex10">
+                    <option value="">---</option>
+                    <option value="correct">нужен будет</option>
+                    <option value="wrong1">нужна будет</option>
+                    <option value="wrong2">нужно будет</option>
+                </select>
+                врач.
+            </p>
+        </div>
+        <div class="feedback-msg"></div>
+        <div class="btn-group">
+            <button class="btn-check" onclick="checkSelect('ex10', 'sel-ex10', 'correct')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetSelect('sel-ex10')">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveSelect('sel-ex10', 'correct')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- ÜBUNG 11 -->
+    <div class="exercise-card" id="ex11">
+        <div class="exercise-header">
+            <h3>Aufgabe 11: Konstruktion mit "чтобы"</h3>
+            <p>Erinnerung: Nach <em>чтобы</em> steht das Verb immer in der Vergangenheitsform. <br>
+            "Ich will/brauche, dass du kommst."</p>
+        </div>
+        <div class="question-area">
+            <p>Мне нужно, чтобы ты ...</p>
+            <div class="radio-group">
+                <label><input type="radio" name="ex11" value="wrong1"> придёшь (Zukunft)</label>
+                <label><input type="radio" name="ex11" value="correct"> пришёл (Vergangenheit)</label>
+                <label><input type="radio" name="ex11" value="wrong2"> приходить (Infinitiv)</label>
+            </div>
+        </div>
+        <div class="feedback-msg"></div>
+        <div class="btn-group">
+            <button class="btn-check" onclick="checkRadio('ex11', 'correct')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetRadio('ex11')">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveRadio('ex11', 'correct')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- ÜBUNG 12 -->
+    <div class="exercise-card" id="ex12">
+        <div class="exercise-header">
+            <h3>Aufgabe 12: Gemischte Lückenübung</h3>
+            <p>Wählen Sie für jede Lücke die passende Form.</p>
+        </div>
+        <div class="question-area">
+            <p>
+                Привет! Мне 
+                <select id="ex12-1">
+                    <option value="">---</option>
+                    <option value="correct">нужен</option>
+                    <option value="wrong">нужна</option>
+                </select>
+                твой совет (m).
+                Мне 
+                <select id="ex12-2">
+                    <option value="">---</option>
+                    <option value="correct">надо</option>
+                    <option value="wrong">нужна</option>
+                </select>
+                купить подарки.
+                Моей маме 
+                <select id="ex12-3">
+                    <option value="">---</option>
+                    <option value="wrong">нужен</option>
+                    <option value="correct">нужна</option>
+                </select>
+                книга (f), а папе 
+                <select id="ex12-4">
+                    <option value="">---</option>
+                    <option value="wrong">нужно</option>
+                    <option value="correct">нужны</option>
+                </select>
+                часы (Pl).
+            </p>
+        </div>
+        <div class="feedback-msg"></div>
+        <div class="btn-group">
+            <button class="btn-check" onclick="checkEx12()">Überprüfen</button>
+            <button class="btn-reset" onclick="resetEx12()">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveEx12()">Lösung anzeigen</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // --- UTILITY: Shuffle Elements ---
+    function shuffleContainer(containerId) {
+        const container = document.getElementById(containerId);
+        for (let i = container.children.length; i >= 0; i--) {
+            container.appendChild(container.children[Math.random() * i | 0]);
+        }
+    }
+
+    // Shuffle on Load
+    window.addEventListener('DOMContentLoaded', () => {
+        shuffleContainer('source-ex5');
+        shuffleContainer('source-ex9');
+    });
+
+    // --- GENERIC FUNCTIONS FOR RADIO BUTTONS ---
+    function checkRadio(exerciseId, correctValue) {
+        const radios = document.getElementsByName(exerciseId);
+        const feedback = document.querySelector(`#${exerciseId} .feedback-msg`);
+        let selected = null;
+        let selectedLabel = null;
+
+        radios.forEach(r => {
+            r.parentElement.classList.remove('correct', 'incorrect');
+            if (r.checked) {
+                selected = r.value;
+                selectedLabel = r.parentElement;
+            }
+        });
+
+        if (!selected) {
+            feedback.innerHTML = "<span class='text-wrong'>Bitte wählen Sie eine Antwort aus.</span>";
+            return;
+        }
+
+        if (selected === correctValue) {
+            selectedLabel.classList.add('correct');
+            feedback.innerHTML = "<span class='text-correct'>Richtig! Gut gemacht.</span>";
+        } else {
+            selectedLabel.classList.add('incorrect');
+            feedback.innerHTML = "<span class='text-wrong'>Leider falsch. Versuchen Sie es noch einmal.</span>";
+        }
+    }
+
+    function resetRadio(exerciseId) {
+        const radios = document.getElementsByName(exerciseId);
+        radios.forEach(r => {
+            r.checked = false;
+            r.parentElement.classList.remove('correct', 'incorrect');
+        });
+        document.querySelector(`#${exerciseId} .feedback-msg`).innerHTML = "";
+    }
+
+    function solveRadio(exerciseId, correctValue) {
+        const radios = document.getElementsByName(exerciseId);
+        radios.forEach(r => {
+            r.parentElement.classList.remove('correct', 'incorrect');
+            if (r.value === correctValue) {
+                r.checked = true;
+                r.parentElement.classList.add('correct');
+            }
+        });
+        document.querySelector(`#${exerciseId} .feedback-msg`).innerHTML = "<span class='text-correct'>Lösung angezeigt.</span>";
+    }
+
+    // --- GENERIC FUNCTIONS FOR DROPDOWNS (SELECT) ---
+    function checkSelect(exerciseId, selectId, correctValue) {
+        const select = document.getElementById(selectId);
+        const feedback = document.querySelector(`#${exerciseId} .feedback-msg`);
+        
+        select.classList.remove('correct', 'incorrect');
+
+        if (select.value === "") {
+            feedback.innerHTML = "<span class='text-wrong'>Bitte wählen Sie eine Antwort aus.</span>";
+            return;
+        }
+
+        if (select.value === correctValue) {
+            select.classList.add('correct');
+            feedback.innerHTML = "<span class='text-correct'>Richtig!</span>";
+        } else {
+            select.classList.add('incorrect');
+            feedback.innerHTML = "<span class='text-wrong'>Falsch.</span>";
+        }
+    }
+
+    function resetSelect(selectId) {
+        const select = document.getElementById(selectId);
+        select.value = "";
+        select.classList.remove('correct', 'incorrect');
+        // Find parent exercise to clear feedback
+        const parent = select.closest('.exercise-card');
+        if(parent) parent.querySelector('.feedback-msg').innerHTML = "";
+    }
+
+    function solveSelect(selectId, correctValue) {
+        const select = document.getElementById(selectId);
+        select.value = correctValue;
+        select.classList.remove('incorrect');
+        select.classList.add('correct');
+        const parent = select.closest('.exercise-card');
+        if(parent) parent.querySelector('.feedback-msg').innerHTML = "<span class='text-correct'>Lösung angezeigt.</span>";
+    }
+
+    // --- DRAG AND DROP LOGIC (EXERCISE 5) ---
+    const draggablesEx5 = document.querySelectorAll('#source-ex5 .draggable-item');
+    const dropzonesEx5 = document.querySelectorAll('#ex5 .dropzone');
+
+    draggablesEx5.forEach(draggable => {
+        draggable.addEventListener('dragstart', () => {
+            draggable.classList.add('dragging');
+        });
+        draggable.addEventListener('dragend', () => {
+            draggable.classList.remove('dragging');
+        });
+    });
+
+    dropzonesEx5.forEach(zone => {
+        zone.addEventListener('dragover', e => {
+            e.preventDefault();
+            const draggable = document.querySelector('.dragging');
+            zone.appendChild(draggable);
+        });
+    });
+
+    function checkDragDrop(exerciseId) {
+        const zones = document.querySelectorAll(`#${exerciseId} .dropzone`);
+        let allCorrect = true;
+        let empty = false;
+
+        zones.forEach(zone => {
+            zone.classList.remove('correct', 'incorrect');
+            const item = zone.querySelector('.draggable-item');
+            if (item) {
+                if (item.dataset.category === zone.dataset.target) {
+                    zone.classList.add('correct');
+                } else {
+                    zone.classList.add('incorrect');
+                    allCorrect = false;
+                }
+            } else {
+                empty = true;
+            }
+        });
+
+        const feedback = document.querySelector(`#${exerciseId} .feedback-msg`);
+        if (empty) {
+            feedback.innerHTML = "<span class='text-wrong'>Bitte ordnen Sie alle Wörter zu.</span>";
+        } else if (allCorrect) {
+            feedback.innerHTML = "<span class='text-correct'>Alles richtig zugeordnet!</span>";
+        } else {
+            feedback.innerHTML = "<span class='text-wrong'>Einige Zuordnungen sind falsch.</span>";
+        }
+    }
+
+    function resetDragDrop(exerciseId) {
+        const source = document.getElementById(`source-${exerciseId}`);
+        const items = document.querySelectorAll(`#${exerciseId} .draggable-item`);
+        const zones = document.querySelectorAll(`#${exerciseId} .dropzone`);
+        
+        items.forEach(item => source.appendChild(item));
+        zones.forEach(zone => zone.classList.remove('correct', 'incorrect'));
+        document.querySelector(`#${exerciseId} .feedback-msg`).innerHTML = "";
+        
+        // Shuffle again on reset
+        shuffleContainer(`source-${exerciseId}`);
+    }
+
+    function solveDragDrop(exerciseId) {
+        resetDragDrop(exerciseId); // Reset first to clear states
+        const zones = document.querySelectorAll(`#${exerciseId} .dropzone`);
+        const items = document.querySelectorAll(`#source-${exerciseId} .draggable-item`);
+
+        items.forEach(item => {
+            const targetCat = item.dataset.category;
+            zones.forEach(zone => {
+                if(zone.dataset.target === targetCat) {
+                    zone.appendChild(item);
+                    zone.classList.add('correct');
+                }
+            });
+        });
+        document.querySelector(`#${exerciseId} .feedback-msg`).innerHTML = "<span class='text-correct'>Lösung angezeigt.</span>";
+    }
+
+    // --- SENTENCE BUILDER LOGIC (EXERCISE 9) ---
+    const draggablesEx9 = document.querySelectorAll('#source-ex9 .draggable-item');
+    const targetEx9 = document.getElementById('target-ex9');
+    const sourceEx9 = document.getElementById('source-ex9');
+
+    draggablesEx9.forEach(draggable => {
+        draggable.addEventListener('dragstart', () => {
+            draggable.classList.add('dragging');
+        });
+        draggable.addEventListener('dragend', () => {
+            draggable.classList.remove('dragging');
+        });
+    });
+
+    [targetEx9, sourceEx9].forEach(zone => {
+        zone.addEventListener('dragover', e => {
+            e.preventDefault();
+            const afterElement = getDragAfterElement(zone, e.clientX);
+            const draggable = document.querySelector('.dragging');
+            if (afterElement == null) {
+                zone.appendChild(draggable);
+            } else {
+                zone.insertBefore(draggable, afterElement);
+            }
+        });
+    });
+
+    function getDragAfterElement(container, x) {
+        const draggableElements = [...container.querySelectorAll('.draggable-item:not(.dragging)')];
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = x - box.left - box.width / 2;
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    function checkSentenceOrder(exerciseId) {
+        const target = document.getElementById(`target-${exerciseId}`);
+        const items = target.querySelectorAll('.draggable-item');
+        const feedback = document.querySelector(`#${exerciseId} .feedback-msg`);
+        
+        target.classList.remove('correct', 'incorrect');
+
+        if (items.length < 4) {
+            feedback.innerHTML = "<span class='text-wrong'>Bitte verwenden Sie alle Wörter.</span>";
+            return;
+        }
+
+        let correctOrder = true;
+        let currentOrder = 1;
+        items.forEach(item => {
+            if (parseInt(item.dataset.order) !== currentOrder) {
+                correctOrder = false;
+            }
+            currentOrder++;
+        });
+
+        if (correctOrder) {
+            target.classList.add('correct');
+            feedback.innerHTML = "<span class='text-correct'>Perfekter Satz!</span>";
+        } else {
+            target.classList.add('incorrect');
+            feedback.innerHTML = "<span class='text-wrong'>Die Reihenfolge stimmt nicht ganz.</span>";
+        }
+    }
+
+    function resetSentenceOrder(exerciseId) {
+        const source = document.getElementById(`source-${exerciseId}`);
+        const items = document.querySelectorAll(`#${exerciseId} .draggable-item`);
+        const target = document.getElementById(`target-${exerciseId}`);
+        
+        items.forEach(item => source.appendChild(item));
+        target.classList.remove('correct', 'incorrect');
+        document.querySelector(`#${exerciseId} .feedback-msg`).innerHTML = "";
+
+        // Shuffle again on reset
+        shuffleContainer(`source-${exerciseId}`);
+    }
+
+    function solveSentenceOrder(exerciseId) {
+        const target = document.getElementById(`target-${exerciseId}`);
+        const source = document.getElementById(`source-${exerciseId}`);
+        const items = Array.from(document.querySelectorAll(`#${exerciseId} .draggable-item`));
+        
+        items.sort((a, b) => a.dataset.order - b.dataset.order);
+        items.forEach(item => target.appendChild(item));
+        
+        target.classList.remove('incorrect');
+        target.classList.add('correct');
+        document.querySelector(`#${exerciseId} .feedback-msg`).innerHTML = "<span class='text-correct'>Lösung angezeigt.</span>";
+    }
+
+
+    // --- EXERCISE 12 (MIXED) ---
+    function checkEx12() {
+        const ids = ['ex12-1', 'ex12-2', 'ex12-3', 'ex12-4'];
+        let correctCount = 0;
+        let allAnswered = true;
+
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            el.classList.remove('correct', 'incorrect');
+            if(el.value === "") allAnswered = false;
+            
+            if(el.value === "correct") {
+                el.classList.add('correct');
+                correctCount++;
+            } else if (el.value !== "") {
+                el.classList.add('incorrect');
+            }
+        });
+
+        const feedback = document.querySelector('#ex12 .feedback-msg');
+        if(!allAnswered) {
+            feedback.innerHTML = "<span class='text-wrong'>Bitte füllen Sie alle Lücken aus.</span>";
+        } else if(correctCount === 4) {
+            feedback.innerHTML = "<span class='text-correct'>Alle Lücken korrekt ausgefüllt!</span>";
+        } else {
+            feedback.innerHTML = "<span class='text-wrong'>Einige Antworten sind falsch.</span>";
+        }
+    }
+
+    function resetEx12() {
+        const ids = ['ex12-1', 'ex12-2', 'ex12-3', 'ex12-4'];
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            el.value = "";
+            el.classList.remove('correct', 'incorrect');
+        });
+        document.querySelector('#ex12 .feedback-msg').innerHTML = "";
+    }
+
+    function solveEx12() {
+        const ids = ['ex12-1', 'ex12-2', 'ex12-3', 'ex12-4'];
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            el.value = "correct";
+            el.classList.remove('incorrect');
+            el.classList.add('correct');
+        });
+        document.querySelector('#ex12 .feedback-msg').innerHTML = "<span class='text-correct'>Lösung angezeigt.</span>";
+    }
+
+</script>
+
+</body>
+</html>
