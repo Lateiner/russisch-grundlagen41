@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Trainer: Genus & Numerus (Sofort-Feedback)</title>
+    <style>
+        :root {
+            --primary: #3f51b5;
+            --primary-light: #c5cae9;
+            --success: #4caf50;
+            --error: #f44336;
+            --bg-color: #f4f4f9;
+            --card-bg: #ffffff;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 1.5rem;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .instruction {
+            background-color: #e8eaf6;
+            color: #555;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        /* --- VISUALISIERUNG (EMOJI) --- */
+        .image-display {
+            font-size: 6rem;
+            margin: 20px 0 10px 0;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+            transition: transform 0.3s;
+        }
+
+        .word-label {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 30px;
+            display: inline-block;
+            background: #eee;
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        /* --- OPTIONS GRID --- */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .option-btn {
+            background: white;
+            border: 2px solid var(--primary-light);
+            color: var(--primary);
+            padding: 20px 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            position: relative;
+        }
+
+        .option-btn:hover {
+            background-color: #f5f5f5;
+            border-color: var(--primary);
+        }
+
+        .option-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Status: Richtig */
+        .option-btn.correct {
+            background-color: var(--success) !important;
+            border-color: var(--success) !important;
+            color: white !important;
+            cursor: default;
+            transform: none;
+            box-shadow: 0 4px 10px rgba(76, 175, 80, 0.4);
+        }
+
+        /* Status: Falsch */
+        .option-btn.incorrect {
+            background-color: var(--error) !important;
+            border-color: var(--error) !important;
+            color: white !important;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Gesperrt (wenn Aufgabe gelöst) */
+        .option-btn.disabled {
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        /* --- CONTROLS --- */
+        .control-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        .feedback-msg {
+            min-height: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button.action-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        button.action-btn:hover { opacity: 0.9; }
+
+        .btn-reset { background-color: #757575; color: white; }
+        .btn-solve { background-color: #ff9800; color: white; }
+        
+        .btn-next { 
+            background-color: var(--success); 
+            color: white; 
+            margin-top: 10px;
+            width: 100%;
+            display: none; /* Sichtbar nach richtiger Antwort */
+            font-size: 1.2rem;
+            padding: 15px;
+            animation: popIn 0.3s ease-out;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .text-correct { color: var(--success); }
+        .text-wrong { color: var(--error); }
+
+        /* Animation für richtiges Emoji */
+        .bounce {
+            animation: bounce 0.5s;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-20px);}
+            60% {transform: translateY(-10px);}
+        }
+
+        @media (max-width: 400px) {
+            .options-grid { grid-template-columns: 1fr; }
+            .btn-group { flex-direction: column; }
+            button.action-btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Was passt? (Genus & Numerus)</h1>
+    
+    <div class="instruction">
+        Schauen Sie sich das Bild an. Klicken Sie direkt auf die passende Form ("nötig").
+    </div>
+
+    <!-- Kartenbereich -->
+    <div id="quiz-area">
+        <div class="image-display" id="display-emoji">❓</div>
+        <div class="word-label" id="display-text">Wort</div>
+
+        <div class="options-grid">
+            <!-- onclick Parameter: Typ (m/f/n/pl) -->
+            <div class="option-btn" onclick="checkOption(this, 'm')">НУЖЕН<br><small>(er)</small></div>
+            <div class="option-btn" onclick="checkOption(this, 'f')">НУЖНА<br><small>(sie)</small></div>
+            <div class="option-btn" onclick="checkOption(this, 'n')">НУЖНО<br><small>(es)</small></div>
+            <div class="option-btn" onclick="checkOption(this, 'pl')">НУЖНЫ<br><small>(Plural)</small></div>
+        </div>
+    </div>
+
+    <div class="control-panel">
+        <div class="feedback-msg" id="feedback"></div>
+        
+        <div class="btn-group">
+            <button class="action-btn btn-reset" onclick="resetCurrent()">Zurücksetzen</button>
+            <button class="action-btn btn-solve" onclick="showSolution()">Lösung anzeigen</button>
+        </div>
+
+        <button class="action-btn btn-next" id="btn-next" onclick="nextQuestion()">➡ Nächstes Bild</button>
+    </div>
+</div>
+
+<script>
+    // --- DATENPOOL ---
+    const vocabulary = [
+        { word: "Koffer", emoji: "💼", type: "m" },
+        { word: "Pass", emoji: "🛂", type: "m" },
+        { word: "Ticket", emoji: "🎫", type: "m" },
+        { word: "Bus", emoji: "🚌", type: "m" },
+        { word: "Computer", emoji: "💻", type: "m" },
+        { word: "Telefon", emoji: "📱", type: "m" },
+
+        { word: "Auto", emoji: "🚗", type: "f" },
+        { word: "Tasche", emoji: "👜", type: "f" },
+        { word: "Pizza", emoji: "🍕", type: "f" },
+        { word: "Zeitung", emoji: "📰", type: "f" },
+        { word: "Karte", emoji: "🗺️", type: "f" },
+        { word: "Lampe", emoji: "💡", type: "f" },
+
+        { word: "Taxi", emoji: "🚕", type: "n" },
+        { word: "Radio", emoji: "📻", type: "n" },
+        { word: "Milch", emoji: "🥛", type: "n" },
+        { word: "Fenster", emoji: "🪟", type: "n" }, 
+        { word: "Foto", emoji: "📸", type: "n" },
+        { word: "Kleid", emoji: "👗", type: "n" },
+
+        { word: "Geld", emoji: "💸", type: "pl" },
+        { word: "Brille", emoji: "👓", type: "pl" },
+        { word: "Schlüssel", emoji: "🔑", type: "pl" },
+        { word: "Uhr", emoji: "⌚", type: "pl" },
+        { word: "Schere", emoji: "✂️", type: "pl" }
+    ];
+
+    // Status
+    let currentItem = null;
+    let isSolved = false; // Ist die aktuelle Frage gelöst?
+
+    // DOM Elemente
+    const elEmoji = document.getElementById('display-emoji');
+    const elText = document.getElementById('display-text');
+    const elFeedback = document.getElementById('feedback');
+    const elNextBtn = document.getElementById('btn-next');
+    const options = document.querySelectorAll('.option-btn');
+
+    // --- LOGIK ---
+
+    function init() {
+        nextQuestion();
+    }
+
+    function nextQuestion() {
+        // Zufälliges Wort wählen
+        const randomIndex = Math.floor(Math.random() * vocabulary.length);
+        currentItem = vocabulary[randomIndex];
+
+        // UI zurücksetzen
+        resetUI();
+
+        // Inhalt setzen
+        elEmoji.textContent = currentItem.emoji;
+        elText.textContent = currentItem.word;
+    }
+
+    function checkOption(btn, type) {
+        if (isSolved) return; // Nichts tun, wenn schon gelöst
+        if (btn.classList.contains('incorrect')) return; // Nichts tun, wenn dieser Button schon als falsch markiert wurde
+
+        if (type === currentItem.type) {
+            // RICHTIG
+            isSolved = true;
+            btn.classList.add('correct');
+            
+            // Andere Buttons deaktivieren (optisch)
+            options.forEach(o => {
+                if(o !== btn) o.classList.add('disabled');
+            });
+
+            // Feedback & Animation
+            elEmoji.classList.add('bounce');
+            elFeedback.innerHTML = "<span class='text-correct'>Richtig! (" + currentItem.word + " ist " + getGenderName(currentItem.type) + ")</span>";
+            elNextBtn.style.display = 'block';
+
+        } else {
+            // FALSCH
+            btn.classList.add('incorrect'); // Rot markieren
+            elFeedback.innerHTML = "<span class='text-wrong'>Falsch, versuche es nochmal!</span>";
+        }
+    }
+
+    function showSolution() {
+        if (isSolved) return;
+        isSolved = true;
+        
+        options.forEach(btn => {
+            // Typ aus dem onclick-Attribut extrahieren
+            const typeInClick = btn.getAttribute('onclick').match(/'([a-z]+)'/)[1];
+            
+            // Buttons zurücksetzen
+            btn.classList.remove('incorrect', 'disabled');
+            
+            if (typeInClick === currentItem.type) {
+                btn.classList.add('correct');
+            } else {
+                btn.classList.add('disabled');
+            }
+        });
+        
+        elFeedback.innerHTML = "<span class='text-correct'>Lösung: " + getGenderName(currentItem.type) + "</span>";
+        elNextBtn.style.display = 'block';
+    }
+
+    function resetCurrent() {
+        // Setzt den Status der aktuellen Karte zurück (als hätte man sie noch nicht beantwortet)
+        isSolved = false;
+        elEmoji.classList.remove('bounce');
+        
+        options.forEach(btn => {
+            btn.classList.remove('correct', 'incorrect', 'disabled');
+        });
+        
+        elFeedback.textContent = "";
+        elNextBtn.style.display = 'none';
+    }
+
+    function resetUI() {
+        resetCurrent();
+    }
+
+    function getGenderName(type) {
+        switch(type) {
+            case 'm': return 'männlich';
+            case 'f': return 'weiblich';
+            case 'n': return 'sächlich';
+            case 'pl': return 'Plural';
+            default: return '';
+        }
+    }
+
+    // Start
+    window.addEventListener('DOMContentLoaded', init);
+
+</script>
+
+</body>
+</html>
