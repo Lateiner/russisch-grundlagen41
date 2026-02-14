@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch: Sätze mit чтобы</title>
+    <style>
+        :root {
+            --primary: #3f51b5;
+            --primary-light: #c5cae9;
+            --bg-color: #f4f4f9;
+            --card-bg: #ffffff;
+            --success: #4caf50;
+            --error: #f44336;
+            --text-main: #333;
+            --stem-bg: #e8eaf6;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-top: 0;
+            font-size: 1.6rem;
+        }
+
+        .intro {
+            background-color: #fff3e0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            text-align: center;
+            color: #555;
+            border-left: 5px solid #ff9800;
+            line-height: 1.5;
+        }
+
+        .rule-highlight {
+            font-weight: bold;
+            color: #e65100;
+        }
+
+        /* --- PROGRESS --- */
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background-color: #eee;
+            border-radius: 3px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* --- AUFGABEN BEREICH --- */
+        .quiz-area {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            flex-grow: 1;
+        }
+
+        /* 1. Linke Seite (Fixierter Satzanfang) */
+        .sentence-stem {
+            background-color: var(--stem-bg);
+            border-left: 6px solid var(--primary);
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon-connector {
+            font-size: 1.5rem;
+            color: #999;
+            margin-left: auto; /* Push to right */
+        }
+
+        /* 2. Rechte Seite (Optionen) */
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-card {
+            background-color: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px 20px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .option-card:hover {
+            border-color: var(--primary);
+            background-color: #f5f7fa;
+            transform: translateX(5px);
+        }
+
+        .option-card:active {
+            transform: scale(0.99);
+        }
+
+        /* Feedback States */
+        .option-card.correct {
+            border-color: var(--success);
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            cursor: default;
+        }
+        
+        .option-card.correct::after {
+            content: "✔";
+            font-weight: bold;
+            color: var(--success);
+        }
+
+        .option-card.incorrect {
+            border-color: var(--error);
+            background-color: #ffebee;
+            color: #c62828;
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .option-card.incorrect::after {
+            content: "✖";
+            font-weight: bold;
+            color: var(--error);
+        }
+
+        .option-card.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* Grammatik-Label (klein unter dem Text) */
+        .grammar-tag {
+            font-size: 0.8rem;
+            color: #777;
+            font-weight: normal;
+            display: block;
+            margin-top: 4px;
+        }
+
+        /* --- FEEDBACK AREA --- */
+        .feedback-box {
+            min-height: 80px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 10px;
+            display: none; /* Erst sichtbar bei Antwort */
+            animation: fadeIn 0.3s;
+        }
+
+        .feedback-box.show {
+            display: block;
+        }
+
+        .fb-success { background-color: #e8f5e9; color: #2e7d32; }
+        .fb-error { background-color: #ffebee; color: #c62828; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- CONTROLS --- */
+        .controls {
+            margin-top: auto;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding-top: 20px;
+        }
+
+        button.nav-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            transition: opacity 0.2s;
+            min-width: 140px;
+        }
+        button.nav-btn:hover { opacity: 0.9; }
+
+        .btn-reset { background-color: #757575; }
+        .btn-next { background-color: var(--success); display: none; }
+
+        /* Mobile */
+        @media (max-width: 500px) {
+            .sentence-stem {
+                font-size: 1.2rem;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .icon-connector {
+                align-self: center;
+                transform: rotate(90deg); /* Pfeil nach unten */
+                margin: 10px 0;
+            }
+            .option-card {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Sätze verbinden: "чтобы"</h1>
+
+    <div class="intro">
+        Regel: Nach <strong>чтобы</strong> (damit/dass) steht im Russischen immer das <span class="rule-highlight">Präteritum</span> (Vergangenheit).<br>
+        <em>Auch wenn die Handlung in der Zukunft liegt!</em>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-bar" id="progress"></div>
+    </div>
+
+    <div class="quiz-area">
+        <!-- Satzanfang -->
+        <div class="sentence-stem">
+            <span id="stem-text">...</span>
+            <span class="icon-connector">➡</span>
+        </div>
+
+        <!-- Optionen -->
+        <div class="options-list" id="options-container">
+            <!-- Wird per JS gefüllt -->
+        </div>
+    </div>
+
+    <!-- Feedback -->
+    <div class="feedback-box" id="feedback">
+        <!-- Text per JS -->
+    </div>
+
+    <div class="controls">
+        <button class="nav-btn btn-reset" onclick="restartGame()">Neustart</button>
+        <button class="nav-btn btn-next" id="btn-next" onclick="nextQuestion()">Weiter ➡</button>
+    </div>
+</div>
+
+<script>
+    // --- DATEN ---
+    // stem: Der fixe Satzanfang
+    // correct: Die richtige Fortsetzung (Vergangenheit)
+    // distractors: Falsche Optionen (Zukunft, Infinitiv, falsches Genus)
+    const questions = [
+        {
+            stem: "Мне нужно, чтобы ты...",
+            translation: "Ich brauche, dass du Brot kaufst.",
+            options: [
+                { text: "... купил хлеб.", type: "correct", tag: "Vergangenheit (Richtig)" },
+                { text: "... купишь хлеб.", type: "wrong", tag: "Zukunft (Falsch)" },
+                { text: "... купить хлеб.", type: "wrong", tag: "Infinitiv (Falsch)" }
+            ]
+        },
+        {
+            stem: "Ему надо, чтобы Анна...",
+            translation: "Er braucht, dass Anna kommt.",
+            options: [
+                { text: "... пришла.", type: "correct", tag: "Vergangenheit (weiblich)" },
+                { text: "... придёт.", type: "wrong", tag: "Zukunft (Falsch)" },
+                { text: "... пришёл.", type: "wrong", tag: "Vergangenheit (aber männlich!)" }
+            ]
+        },
+        {
+            stem: "Нам нужно, чтобы вы...",
+            translation: "Wir brauchen, dass ihr das lest.",
+            options: [
+                { text: "... прочитали это.", type: "correct", tag: "Vergangenheit (Plural)" },
+                { text: "... прочитаете это.", type: "wrong", tag: "Zukunft (Falsch)" },
+                { text: "... прочитать это.", type: "wrong", tag: "Infinitiv (Falsch)" }
+            ]
+        },
+        {
+            stem: "Я хочу, чтобы он...",
+            translation: "Ich will, dass er anruft.",
+            options: [
+                { text: "... позвонил.", type: "correct", tag: "Vergangenheit (männlich)" },
+                { text: "... позвонит.", type: "wrong", tag: "Zukunft (Falsch)" },
+                { text: "... позвонить.", type: "wrong", tag: "Infinitiv (Falsch)" }
+            ]
+        },
+        {
+            stem: "Им нужно, чтобы мы...",
+            translation: "Sie brauchen, dass wir helfen.",
+            options: [
+                { text: "... помогли.", type: "correct", tag: "Vergangenheit (Plural)" },
+                { text: "... поможем.", type: "wrong", tag: "Zukunft (Falsch)" },
+                { text: "... помогать.", type: "wrong", tag: "Infinitiv (Falsch)" }
+            ]
+        },
+        {
+            stem: "Мне нужно, чтобы такси...",
+            translation: "Ich brauche, dass das Taxi schnell kommt.",
+            options: [
+                { text: "... приехало быстро.", type: "correct", tag: "Vergangenheit (sächlich)" },
+                { text: "... приедет быстро.", type: "wrong", tag: "Zukunft (Falsch)" },
+                { text: "... приехала быстро.", type: "wrong", tag: "Vergangenheit (falsches Genus)" }
+            ]
+        }
+    ];
+
+    // State
+    let currentIndex = 0;
+    let isSolved = false;
+
+    // DOM
+    const stemText = document.getElementById('stem-text');
+    const optionsContainer = document.getElementById('options-container');
+    const feedbackBox = document.getElementById('feedback');
+    const btnNext = document.getElementById('btn-next');
+    const progressBar = document.getElementById('progress');
+
+    // --- INITIALISIERUNG ---
+    function init() {
+        currentIndex = 0;
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        isSolved = false;
+        const q = questions[currentIndex];
+
+        // UI Reset
+        feedbackBox.className = "feedback-box"; // hide
+        feedbackBox.innerHTML = "";
+        btnNext.style.display = "none";
+        
+        // Progress
+        const pct = (currentIndex / questions.length) * 100;
+        progressBar.style.width = `${pct}%`;
+
+        // Text setzen
+        stemText.textContent = q.stem;
+
+        // Optionen mischen
+        const shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
+
+        // Buttons rendern
+        optionsContainer.innerHTML = "";
+        shuffledOptions.forEach(opt => {
+            const btn = document.createElement('div');
+            btn.className = "option-card";
+            
+            const textSpan = document.createElement('span');
+            textSpan.textContent = opt.text;
+            
+            // Optional: Grammatik-Hinweis erst bei Auflösung zeigen? 
+            // Hier zeigen wir ihn direkt im Feedback, nicht auf dem Button, um nicht zu viel zu verraten.
+            // Aber wir speichern die Info.
+            
+            btn.appendChild(textSpan);
+            
+            btn.onclick = () => checkAnswer(btn, opt, q);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    // --- LOGIK ---
+    function checkAnswer(btnElement, optionData, questionData) {
+        if (isSolved) return;
+        isSolved = true;
+
+        const allBtns = optionsContainer.querySelectorAll('.option-card');
+        
+        // Style selected button
+        if (optionData.type === 'correct') {
+            // RICHTIG
+            btnElement.classList.add('correct');
+            showFeedback(true, "Richtig! Nach 'чтобы' benutzen wir das Präteritum.<br><small>" + questionData.translation + "</small>");
+        } else {
+            // FALSCH
+            btnElement.classList.add('incorrect');
+            showFeedback(false, "Falsch. Du hast '" + optionData.tag + "' gewählt. Richtig wäre Präteritum.");
+            
+            // Zeige die richtige Antwort an
+            allBtns.forEach(b => {
+                // Wir müssen den Text vergleichen, da wir gemischt haben
+                if (b.textContent === questionData.options.find(o => o.type === 'correct').text) {
+                    b.classList.add('correct');
+                }
+            });
+        }
+
+        // Andere deaktivieren
+        allBtns.forEach(b => {
+            if (!b.classList.contains('correct') && !b.classList.contains('incorrect')) {
+                b.classList.add('disabled');
+            }
+        });
+
+        // Next Button
+        if (currentIndex < questions.length - 1) {
+            btnNext.style.display = "inline-block";
+        } else {
+            btnNext.textContent = "Fertig! 🎉";
+            btnNext.style.display = "inline-block";
+            btnNext.onclick = null;
+            progressBar.style.width = "100%";
+        }
+    }
+
+    function showFeedback(isSuccess, htmlText) {
+        feedbackBox.innerHTML = htmlText;
+        feedbackBox.className = `feedback-box show ${isSuccess ? 'fb-success' : 'fb-error'}`;
+    }
+
+    function nextQuestion() {
+        currentIndex++;
+        if (currentIndex < questions.length) {
+            loadQuestion();
+        }
+    }
+
+    function restartGame() {
+        init();
+        btnNext.onclick = nextQuestion;
+        btnNext.textContent = "Weiter ➡";
+    }
+
+    // Start
+    window.addEventListener('DOMContentLoaded', init);
+
+</script>
+
+</body>
+</html>
