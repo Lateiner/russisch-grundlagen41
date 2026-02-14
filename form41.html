@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Drill: Lückentext (10 Sätze)</title>
+    <style>
+        :root {
+            --primary: #3f51b5;
+            --bg-color: #f4f4f9;
+            --card-bg: #ffffff;
+            --success: #4caf50;
+            --error: #f44336;
+            --text: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-top: 0;
+        }
+
+        .intro {
+            background-color: #e8eaf6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            text-align: center;
+            color: #555;
+        }
+
+        /* --- EXERCISE LIST --- */
+        .exercise-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .sentence-item {
+            background-color: #fff;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-wrap: wrap; /* Wichtig für Mobile: Umbruch erlauben */
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            transition: background-color 0.3s;
+        }
+
+        .sentence-number {
+            font-weight: bold;
+            color: var(--primary);
+            min-width: 25px;
+        }
+
+        /* Dropdown Styling */
+        select.cloze-select {
+            font-size: 1rem;
+            padding: 5px 10px;
+            border: 2px solid #ccc;
+            border-radius: 6px;
+            background-color: #f9f9f9;
+            cursor: pointer;
+            outline: none;
+            font-weight: bold;
+            color: #333;
+            min-width: 110px;
+        }
+
+        select.cloze-select:focus {
+            border-color: var(--primary);
+        }
+
+        /* Feedback States */
+        select.correct {
+            border-color: var(--success);
+            background-color: #e8f5e9;
+            color: var(--success);
+        }
+
+        select.incorrect {
+            border-color: var(--error);
+            background-color: #ffebee;
+            color: var(--error);
+        }
+
+        /* Erklärungstext (erscheint bei Richtiger Antwort) */
+        .explanation {
+            font-size: 0.9rem;
+            color: var(--success);
+            font-weight: bold;
+            margin-left: 10px;
+            display: none; /* Standardmäßig versteckt */
+            animation: fadeIn 0.5s;
+            flex-basis: 100%; /* In neuer Zeile auf Mobile oft besser */
+            padding-left: 35px; /* Einrücken unter den Text */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- BUTTONS --- */
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            transition: opacity 0.2s;
+        }
+
+        button:hover { opacity: 0.9; }
+
+        .btn-reset { background-color: #757575; }
+        .btn-solve { background-color: #ff9800; }
+
+        /* Responsive Anpassungen */
+        @media (max-width: 600px) {
+            .sentence-item {
+                font-size: 1rem;
+                padding: 12px;
+            }
+            select.cloze-select {
+                width: 100%; /* Auf Handy volle Breite für einfachere Auswahl */
+                margin: 5px 0;
+            }
+            .explanation {
+                padding-left: 0;
+                margin-top: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Lückentext: Die richtige Form</h1>
+    
+    <div class="intro">
+        Wählen Sie für jeden Satz die passende Form aus (<em>нужен, нужна, нужно, нужны</em>). 
+        Achten Sie auf das Geschlecht des Gegenstandes!
+    </div>
+
+    <div class="exercise-list" id="drill-container">
+        <!-- Sätze werden per JS hier eingefügt -->
+    </div>
+
+    <div class="controls">
+        <button class="btn-reset" onclick="resetDrill()">Alles zurücksetzen</button>
+        <button class="btn-solve" onclick="showSolutions()">Lösungen anzeigen</button>
+    </div>
+</div>
+
+<script>
+    // --- DATEN ---
+    const sentences = [
+        {
+            pre: "Мне", 
+            post: "новая куртка.", 
+            correct: "нужна", 
+            hint: "(куртка, f)", 
+            explain: "Weiblich (она)" 
+        },
+        {
+            pre: "Мне", 
+            post: "новый паспорт.", 
+            correct: "нужен", 
+            hint: "(паспорт, m)", 
+            explain: "Männlich (он)" 
+        },
+        {
+            pre: "Нам", 
+            post: "такси сейчас.", 
+            correct: "нужно", 
+            hint: "(такси, n)", 
+            explain: "Sächlich (оно)" 
+        },
+        {
+            pre: "Им", 
+            post: "деньги.", 
+            correct: "нужны", 
+            hint: "(деньги, pl)", 
+            explain: "Plural (они)" 
+        },
+        {
+            pre: "Тебе", 
+            post: "помощь?", 
+            correct: "нужна", 
+            hint: "(помощь, f)", 
+            explain: "Weiblich (она)" 
+        },
+        {
+            pre: "Ему", 
+            post: "хороший врач.", 
+            correct: "нужен", 
+            hint: "(врач, m)", 
+            explain: "Männlich (он)" 
+        },
+        {
+            pre: "Вам", 
+            post: "очки?", 
+            correct: "нужны", 
+            hint: "(очки, pl)", 
+            explain: "Plural (они)" 
+        },
+        {
+            pre: "Мне", 
+            post: "это фото.", 
+            correct: "нужно", 
+            hint: "(фото, n)", 
+            explain: "Sächlich (оно)" 
+        },
+        {
+            pre: "Мне", 
+            post: "обратный билет.", 
+            correct: "нужен", 
+            hint: "(билет, m)", 
+            explain: "Männlich (он)" 
+        },
+        {
+            pre: "Где мои ключи? Они мне", 
+            post: ".", 
+            correct: "нужны", 
+            hint: "(ключи, pl)", 
+            explain: "Plural (они)" 
+        }
+    ];
+
+    // Die verfügbaren Optionen im Dropdown
+    const options = ["---", "нужен", "нужна", "нужно", "нужны"];
+
+    const container = document.getElementById('drill-container');
+
+    // --- INITIALISIERUNG ---
+    function init() {
+        renderSentences();
+    }
+
+    function renderSentences() {
+        container.innerHTML = "";
+
+        sentences.forEach((item, index) => {
+            // Container für Satz
+            const div = document.createElement('div');
+            div.className = 'sentence-item';
+
+            // Nummerierung
+            const numSpan = document.createElement('span');
+            numSpan.className = 'sentence-number';
+            numSpan.textContent = (index + 1) + ".";
+            div.appendChild(numSpan);
+
+            // Text vor Lücke
+            const spanPre = document.createElement('span');
+            spanPre.textContent = item.pre;
+            div.appendChild(spanPre);
+
+            // Select Element
+            const select = document.createElement('select');
+            select.className = 'cloze-select';
+            select.dataset.index = index; 
+            
+            // Optionen füllen
+            options.forEach(opt => {
+                const option = document.createElement('option');
+                option.value = opt;
+                option.textContent = opt;
+                if(opt === "---") option.value = "";
+                select.appendChild(option);
+            });
+
+            // Event Listener für Sofort-Feedback
+            select.addEventListener('change', (e) => checkAnswer(e.target, item.correct));
+
+            div.appendChild(select);
+
+            // Text nach Lücke + Hinweis
+            const spanPost = document.createElement('span');
+            // Hinweis kursiv und grau
+            spanPost.innerHTML = `${item.post} <span style="color:#888; font-size:0.9em; margin-left:5px;">${item.hint}</span>`;
+            div.appendChild(spanPost);
+
+            // Erklärung (versteckt)
+            const explainDiv = document.createElement('div');
+            explainDiv.className = 'explanation';
+            explainDiv.id = `explain-${index}`;
+            explainDiv.innerHTML = `✔ Richtig! ${item.explain}`;
+            div.appendChild(explainDiv);
+
+            container.appendChild(div);
+        });
+    }
+
+    // --- LOGIK ---
+    function checkAnswer(selectElement, correctAnswer) {
+        const selectedValue = selectElement.value;
+        const index = selectElement.dataset.index;
+        const explainDiv = document.getElementById(`explain-${index}`);
+
+        // Klassen zurücksetzen
+        selectElement.classList.remove('correct', 'incorrect');
+        explainDiv.style.display = 'none';
+
+        if (selectedValue === "") {
+            return; 
+        }
+
+        if (selectedValue === correctAnswer) {
+            selectElement.classList.add('correct');
+            // Erklärung anzeigen
+            explainDiv.style.display = 'block';
+        } else {
+            selectElement.classList.add('incorrect');
+        }
+    }
+
+    function resetDrill() {
+        const selects = document.querySelectorAll('select');
+        selects.forEach(sel => {
+            sel.value = "";
+            sel.classList.remove('correct', 'incorrect');
+        });
+        const explains = document.querySelectorAll('.explanation');
+        explains.forEach(ex => ex.style.display = 'none');
+    }
+
+    function showSolutions() {
+        const selects = document.querySelectorAll('select');
+        selects.forEach((sel, idx) => {
+            const correctAnswer = sentences[idx].correct;
+            sel.value = correctAnswer;
+            // Wir triggern manuell die Prüfung für das visuelle Feedback
+            checkAnswer(sel, correctAnswer);
+        });
+    }
+
+    // Start
+    window.addEventListener('DOMContentLoaded', init);
+
+</script>
+
+</body>
+</html>
