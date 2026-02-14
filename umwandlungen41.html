@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch: Der Chef befiehlt (Lösung & Weiter)</title>
+    <style>
+        :root {
+            --primary: #3f51b5;
+            --primary-dark: #303f9f;
+            --bg-color: #f4f4f9;
+            --card-bg: #ffffff;
+            --success: #4caf50;
+            --error: #f44336;
+            --info: #ff9800;
+            --text: #333;
+            --boss-bg: #ffe0b2;
+            --boss-border: #ffb74d;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            min-height: 85vh;
+        }
+
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-top: 0;
+            font-size: 1.6rem;
+        }
+
+        .intro {
+            background-color: #e8eaf6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #555;
+            line-height: 1.5;
+            border-left: 5px solid var(--primary);
+        }
+
+        /* --- THE BOSS SECTION --- */
+        .boss-section {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 30px;
+            background-color: var(--boss-bg);
+            border: 2px solid var(--boss-border);
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .boss-avatar {
+            font-size: 3rem;
+            line-height: 1;
+        }
+
+        .bubble {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            flex-grow: 1;
+        }
+
+        .bubble::after {
+            content: '';
+            position: absolute;
+            left: -10px;
+            top: 15px;
+            border-style: solid;
+            border-width: 10px 10px 10px 0;
+            border-color: transparent white transparent transparent;
+        }
+
+        .command-text {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #d84315;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .command-translation {
+            font-size: 0.95rem;
+            color: #777;
+            font-style: italic;
+        }
+
+        /* --- CONSTRUCTION ZONE --- */
+        .construction-zone {
+            min-height: 70px;
+            border-bottom: 2px solid #ccc;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            padding: 10px;
+            transition: border-color 0.3s, background-color 0.3s;
+        }
+
+        .construction-zone.empty::before {
+            content: "Tippen Sie die Wörter an...";
+            color: #aaa;
+            font-style: italic;
+        }
+
+        .construction-zone.correct {
+            border-bottom-color: var(--success);
+            background-color: #e8f5e9;
+        }
+        
+        .construction-zone.incorrect {
+            border-bottom-color: var(--error);
+            background-color: #ffebee;
+            animation: shake 0.4s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* --- WORD BANK --- */
+        .word-bank {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            padding: 10px;
+        }
+
+        .word-chip {
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            color: #333;
+            padding: 10px 18px;
+            border-radius: 20px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.15s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            font-weight: 500;
+        }
+
+        .word-chip:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+            background-color: #e8eaf6;
+        }
+
+        .word-chip:active {
+            transform: scale(0.95);
+        }
+
+        .word-chip.animate-in {
+            animation: popIn 0.3s;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* --- CONTROLS --- */
+        .controls {
+            margin-top: auto;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .feedback-text {
+            font-weight: bold;
+            font-size: 1.1rem;
+            min-height: 24px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button.nav-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            transition: opacity 0.2s;
+            flex: 1;
+            min-width: 140px;
+            max-width: 200px;
+        }
+        button.nav-btn:hover { opacity: 0.9; }
+
+        .btn-reset { background-color: #757575; }
+        .btn-solve { background-color: var(--info); }
+        
+        /* Der Weiter-Button ist jetzt breiter und auffälliger */
+        .btn-next { 
+            background-color: var(--success); 
+            display: none; 
+            width: 100%;
+            max-width: 100%; /* Volle Breite im Container */
+            margin-top: 10px;
+            padding: 15px;
+            font-size: 1.1rem;
+        }
+
+        .text-success { color: var(--success); }
+        .text-error { color: var(--error); }
+        .text-info { color: var(--info); }
+        
+        .grammar-hint { 
+            color: #666; 
+            font-size: 0.9rem; 
+            font-weight: normal; 
+            display: block; 
+            margin-top: 5px; 
+            background: #f9f9f9;
+            padding: 5px;
+            border-radius: 4px;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: #eee;
+            margin-bottom: 20px;
+            border-radius: 3px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .boss-section {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            .bubble::after {
+                left: 50%;
+                top: -20px;
+                margin-left: -10px;
+                border-width: 0 10px 20px 10px;
+                border-color: transparent transparent white transparent;
+            }
+            .word-chip {
+                padding: 8px 14px;
+                font-size: 1rem;
+            }
+            .btn-group {
+                flex-direction: row;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Der Chef befiehlt 👔</h1>
+    
+    <div class="intro">
+        Wandeln Sie den Befehl des Chefs (Imperativ) in einen Wunsch um.<br>
+        <strong>Regel:</strong> <em>Мне нужно, чтобы</em> + Subjekt + <strong>Präteritum</strong> (Vergangenheit).
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-fill" id="progress"></div>
+    </div>
+
+    <!-- DER CHEF -->
+    <div class="boss-section">
+        <div class="boss-avatar">👨‍💼</div>
+        <div class="bubble">
+            <span class="command-text" id="boss-command">...</span>
+            <span class="command-translation" id="boss-translation">...</span>
+        </div>
+    </div>
+
+    <!-- SATZBAU -->
+    <div class="construction-zone empty" id="target-area">
+        <!-- Wörter landen hier -->
+    </div>
+
+    <!-- FEEDBACK -->
+    <div class="feedback-text" id="feedback"></div>
+
+    <!-- WORT VORRAT -->
+    <div class="word-bank" id="source-area">
+        <!-- Wörter starten hier -->
+    </div>
+
+    <div class="controls">
+        <div class="btn-group">
+            <button class="nav-btn btn-reset" onclick="resetLevel()">Zurücksetzen</button>
+            <button class="nav-btn btn-solve" onclick="showSolution()">Lösung anzeigen</button>
+        </div>
+        
+        <button class="nav-btn btn-next" id="btn-next" onclick="nextLevel()">Nächster Befehl ➡</button>
+    </div>
+</div>
+
+<script>
+    // --- DATEN ---
+    const levels = [
+        {
+            command: "Купи молоко!",
+            translation: "Kauf Milch! (Du)",
+            solution: ["Мне", "нужно,", "чтобы", "ты", "купил", "молоко."],
+            grammar: "Imperativ 'купи' ➔ Präteritum 'купил'"
+        },
+        {
+            command: "Позвони клиенту!",
+            translation: "Ruf den Kunden an! (Du)",
+            solution: ["Мне", "нужно,", "чтобы", "ты", "позвонил", "клиенту."],
+            grammar: "Imperativ 'позвони' ➔ Präteritum 'позвонил'"
+        },
+        {
+            command: "Сделайте отчёт!",
+            translation: "Machen Sie den Bericht! (Sie/Ihr)",
+            solution: ["Мне", "нужно,", "чтобы", "вы", "сделали", "отчёт."],
+            grammar: "Imperativ 'сделайте' ➔ Präteritum Plural 'сделали'"
+        },
+        {
+            command: "Не опаздывай!",
+            translation: "Komm nicht zu spät! (Du)",
+            solution: ["Мне", "нужно,", "чтобы", "ты", "не", "опаздывал."],
+            grammar: "Imperativ 'не опаздывай' ➔ Präteritum 'не опаздывал'"
+        },
+        {
+            command: "Открой окно!",
+            translation: "Öffne das Fenster! (Du)",
+            solution: ["Мне", "нужно,", "чтобы", "ты", "открыл", "окно."],
+            grammar: "Imperativ 'открой' ➔ Präteritum 'открыл'"
+        },
+        {
+            command: "Придите завтра!",
+            translation: "Kommen Sie morgen! (Sie)",
+            solution: ["Мне", "нужно,", "чтобы", "вы", "пришли", "завтра."],
+            grammar: "Imperativ 'придите' ➔ Präteritum Plural 'пришли'"
+        },
+        {
+            command: "Напиши письмо!",
+            translation: "Schreib den Brief! (Du)",
+            solution: ["Мне", "нужно,", "чтобы", "ты", "написал", "письмо."],
+            grammar: "Imperativ 'напиши' ➔ Präteritum 'написал'"
+        },
+        {
+            command: "Купите билеты!",
+            translation: "Kaufen Sie die Tickets! (Sie)",
+            solution: ["Мне", "нужно,", "чтобы", "вы", "купили", "билеты."],
+            grammar: "Imperativ 'купите' ➔ Präteritum Plural 'купили'"
+        }
+    ];
+
+    // State
+    let currentIdx = 0;
+    let placedWords = [];
+    let remainingWords = [];
+    let isSolved = false;
+
+    // DOM
+    const bossCommand = document.getElementById('boss-command');
+    const bossTrans = document.getElementById('boss-translation');
+    const targetArea = document.getElementById('target-area');
+    const sourceArea = document.getElementById('source-area');
+    const feedbackEl = document.getElementById('feedback');
+    const btnNext = document.getElementById('btn-next');
+    const progressFill = document.getElementById('progress');
+
+    // --- INIT ---
+    function init() {
+        currentIdx = 0;
+        loadLevel();
+    }
+
+    function loadLevel() {
+        isSolved = false;
+        const level = levels[currentIdx];
+
+        // UI Updates
+        bossCommand.textContent = level.command;
+        bossTrans.textContent = level.translation;
+        feedbackEl.innerHTML = "";
+        
+        // Buttons
+        btnNext.style.display = 'none';
+        
+        targetArea.className = 'construction-zone empty';
+        
+        // Progress
+        const pct = (currentIdx / levels.length) * 100;
+        progressFill.style.width = `${pct}%`;
+
+        // Wörter vorbereiten
+        // Wir kopieren die Lösung und mischen sie für den Vorrat
+        remainingWords = [...level.solution];
+        shuffleArray(remainingWords);
+        placedWords = [];
+
+        render();
+    }
+
+    // --- RENDER ---
+    function render() {
+        // Target rendern
+        targetArea.innerHTML = "";
+        if (placedWords.length > 0) {
+            targetArea.classList.remove('empty');
+            placedWords.forEach((word, idx) => {
+                const chip = createChip(word, 'target', idx);
+                targetArea.appendChild(chip);
+            });
+        } else {
+            targetArea.classList.add('empty');
+        }
+
+        // Source rendern
+        sourceArea.innerHTML = "";
+        remainingWords.forEach((word, idx) => {
+            const chip = createChip(word, 'source', idx);
+            sourceArea.appendChild(chip);
+        });
+    }
+
+    function createChip(text, location, index) {
+        const chip = document.createElement('div');
+        chip.className = 'word-chip animate-in';
+        chip.textContent = text;
+        
+        // Klick sperren, wenn gelöst, aber nur für "Source". 
+        // Target soll klickbar bleiben, falls man was ändern will (aber hier blockieren wir bei isSolved komplett)
+        if (!isSolved) {
+            chip.onclick = () => handleWordClick(text, location, index);
+        } else {
+            chip.style.cursor = "default";
+        }
+        
+        return chip;
+    }
+
+    // --- LOGIK ---
+    function handleWordClick(text, location, index) {
+        if (isSolved) return;
+
+        // Feedback resetten bei Interaktion
+        targetArea.classList.remove('incorrect');
+        feedbackEl.innerHTML = "";
+
+        if (location === 'source') {
+            remainingWords.splice(index, 1);
+            placedWords.push(text);
+        } else {
+            placedWords.splice(index, 1);
+            remainingWords.push(text);
+        }
+
+        render();
+
+        // Automatische Prüfung, wenn alle Wörter platziert sind
+        if (remainingWords.length === 0) {
+            checkSentence();
+        }
+    }
+
+    function checkSentence() {
+        const currentSentence = placedWords.join(' ');
+        const correctSentence = levels[currentIdx].solution.join(' ');
+
+        if (currentSentence === correctSentence) {
+            // Richtig
+            isSolved = true;
+            targetArea.classList.add('correct');
+            feedbackEl.innerHTML = `<span class="text-success">Perfekt!</span><span class="grammar-hint">${levels[currentIdx].grammar}</span>`;
+            showNextButton();
+        } else {
+            // Falsch
+            targetArea.classList.add('incorrect');
+            feedbackEl.innerHTML = `<span class="text-error">Die Reihenfolge stimmt nicht ganz.</span>`;
+        }
+    }
+
+    // --- BUTTON ACTIONS ---
+
+    function resetLevel() {
+        loadLevel(); // Lädt Level neu (mischt auch neu)
+    }
+
+    function showSolution() {
+        // Mark as solved
+        isSolved = true;
+        
+        // Setze die Wörter direkt in die richtige Reihenfolge
+        placedWords = [...levels[currentIdx].solution];
+        remainingWords = [];
+        
+        render();
+        
+        // Visuelles Feedback
+        targetArea.classList.remove('incorrect');
+        targetArea.classList.add('correct'); // Optional: Andere Farbe für "gelöst"?
+        feedbackEl.innerHTML = `<span class="text-info">Lösung angezeigt.</span><span class="grammar-hint">${levels[currentIdx].grammar}</span>`;
+        
+        showNextButton();
+    }
+
+    function showNextButton() {
+        if (currentIdx < levels.length - 1) {
+            btnNext.textContent = "Nächster Befehl ➡";
+            btnNext.style.display = 'block';
+        } else {
+            btnNext.textContent = "Fertig! 🎉";
+            btnNext.style.display = 'block';
+            btnNext.onclick = null;
+            progressFill.style.width = "100%";
+        }
+    }
+
+    function nextLevel() {
+        currentIdx++;
+        if (currentIdx < levels.length) {
+            loadLevel();
+        }
+    }
+
+    // Hilfsfunktion: Mischen
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    // Start
+    window.addEventListener('DOMContentLoaded', init);
+
+</script>
+
+</body>
+</html>
