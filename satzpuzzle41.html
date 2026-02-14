@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Puzzle: Zeitformen</title>
+    <style>
+        :root {
+            --primary: #3f51b5;
+            --bg-color: #f4f4f9;
+            --card-bg: #ffffff;
+            --success: #4caf50;
+            --error: #f44336;
+            --text: #333;
+            --piece-bg: #e3f2fd;
+            --piece-border: #90caf9;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            min-height: 80vh;
+        }
+
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-top: 0;
+            font-size: 1.6rem;
+        }
+
+        .intro {
+            background-color: #fff3e0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #555;
+            border-left: 5px solid #ff9800;
+        }
+
+        /* --- FORTSCHRITT --- */
+        .progress-bar {
+            height: 6px;
+            background-color: #eee;
+            border-radius: 3px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        /* --- AUFGABENBEREICH --- */
+        .puzzle-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        /* Der Satz */
+        .sentence-display {
+            font-size: 1.4rem;
+            line-height: 1.6;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        /* Das Signalwort (Zeitmarker) */
+        .time-marker {
+            color: #e91e63; /* Pink/Red hervorhebung */
+            font-weight: bold;
+            text-decoration: underline;
+        }
+
+        /* Die Lücke */
+        .gap-box {
+            display: inline-block;
+            min-width: 80px;
+            height: 1.4em;
+            border-bottom: 3px solid var(--primary);
+            margin: 0 5px;
+            text-align: center;
+            color: var(--primary);
+            font-weight: bold;
+            vertical-align: bottom;
+            transition: all 0.3s;
+        }
+
+        .gap-box.filled {
+            border-bottom-color: transparent;
+            background-color: #e8eaf6;
+            border-radius: 4px;
+            padding: 0 10px;
+        }
+
+        /* --- PUZZLETEILE (Optionen) --- */
+        .options-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .puzzle-piece {
+            background-color: white;
+            border: 2px solid var(--piece-border);
+            color: var(--primary);
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.1s, box-shadow 0.1s, background-color 0.2s;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .puzzle-piece:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(0,0,0,0.1);
+            background-color: #f0f7ff;
+        }
+
+        .puzzle-piece:active {
+            transform: scale(0.96);
+        }
+
+        /* Spezial-Style für "Kein Wort" */
+        .puzzle-piece.zero-option {
+            border-style: dashed;
+            color: #777;
+            border-color: #bbb;
+        }
+
+        /* Status Klassen */
+        .puzzle-piece.correct {
+            background-color: var(--success);
+            border-color: var(--success);
+            color: white;
+            pointer-events: none;
+        }
+
+        .puzzle-piece.incorrect {
+            background-color: var(--error);
+            border-color: var(--error);
+            color: white;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .puzzle-piece.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* --- FEEDBACK --- */
+        .feedback-box {
+            min-height: 60px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .feedback-msg {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .explanation {
+            font-size: 0.95rem;
+            color: #555;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        .text-success { color: var(--success); }
+        .text-error { color: var(--error); }
+
+        /* Animationen */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .shake { animation: shake 0.4s; }
+
+        /* --- STEUERUNG --- */
+        .controls {
+            margin-top: auto; /* Push to bottom */
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        button.nav-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            transition: opacity 0.2s;
+        }
+        
+        .btn-reset { background-color: #757575; }
+        .btn-next { background-color: var(--success); display: none; width: 100%; max-width: 200px; }
+
+        /* Mobile */
+        @media (max-width: 600px) {
+            .options-grid {
+                gap: 8px;
+            }
+            .puzzle-piece {
+                padding: 10px 15px;
+                font-size: 1rem;
+                flex: 1 1 40%; /* 2 pro Zeile */
+                text-align: center;
+            }
+            .sentence-display {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Zeitformen-Puzzle</h1>
+    
+    <div class="intro">
+        Achten Sie auf das <strong>markierte Zeitwort</strong>. Welches Hilfsverb passt in die Lücke?
+        Wenn der Satz im Präsens (heute/jetzt) steht, wählen Sie <em>"--- (Kein Wort)"</em>.
+    </div>
+
+    <div class="progress-bar">
+        <div class="progress-fill" id="progress"></div>
+    </div>
+
+    <div class="puzzle-area">
+        
+        <!-- Satz Anzeige -->
+        <div class="sentence-display" id="sentence-container">
+            <!-- Wird per JS gefüllt: "Вчера мне нужен ___ паспорт." -->
+        </div>
+
+        <!-- Feedback -->
+        <div class="feedback-box" id="feedback-container">
+            <span class="feedback-msg" id="feedback-text"></span>
+            <div class="explanation" id="feedback-expl" style="display:none;"></div>
+        </div>
+
+        <!-- Puzzleteile -->
+        <div class="options-grid" id="options-container">
+            <!-- Buttons per JS -->
+        </div>
+
+    </div>
+
+    <div class="controls">
+        <button class="nav-btn btn-reset" onclick="restartGame()">Neustart</button>
+        <button class="nav-btn btn-next" id="btn-next" onclick="nextQuestion()">Nächste Frage ➡</button>
+    </div>
+</div>
+
+<script>
+    // --- DATEN ---
+    // gap: wird durch eine visuelle Lücke ersetzt
+    // type: 'past', 'future', 'present' (für interne Logik)
+    const questions = [
+        {
+            fullSentence: "<span class='time-marker'>Вчера</span> мне нужен GAP врач.",
+            correct: "был",
+            explanation: "Vergangenheit + Männlich (врач) ➔ был",
+            optionsPool: ["был", "была", "будет", "---"]
+        },
+        {
+            fullSentence: "<span class='time-marker'>Сейчас</span> мне GAP нужно такси.",
+            correct: "---",
+            explanation: "Gegenwart (jetzt) ➔ Kein Hilfsverb (Nullkopula)",
+            optionsPool: ["было", "будет", "---", "нужно"]
+        },
+        {
+            fullSentence: "<span class='time-marker'>Завтра</span> нам нужна GAP машина.",
+            correct: "будет",
+            explanation: "Zukunft + Einzahl ➔ будет (egal ob m/f/n)",
+            optionsPool: ["была", "будет", "будут", "---"]
+        },
+        {
+            fullSentence: "<span class='time-marker'>Раньше</span> (Früher) мне нужна GAP виза.",
+            correct: "была",
+            explanation: "Vergangenheit + Weiblich (виза) ➔ была",
+            optionsPool: ["был", "была", "будет", "---"]
+        },
+        {
+            fullSentence: "<span class='time-marker'>Сегодня</span> мне GAP нужны деньги.",
+            correct: "---",
+            explanation: "Gegenwart (heute) ➔ Kein Hilfsverb",
+            optionsPool: ["были", "будут", "---", "нужны"]
+        },
+        {
+            fullSentence: "<span class='time-marker'>Вчера</span> нам нужно GAP время.",
+            correct: "было",
+            explanation: "Vergangenheit + Sächlich (время) ➔ было",
+            optionsPool: ["был", "было", "будет", "---"]
+        },
+        {
+            fullSentence: "<span class='time-marker'>Завтра</span> им нужны GAP документы.",
+            correct: "будут",
+            explanation: "Zukunft + Plural (документы) ➔ будут",
+            optionsPool: ["были", "будет", "будут", "---"]
+        },
+        {
+            fullSentence: "<span class='time-marker'>Вчера</span> мне нужны GAP очки.",
+            correct: "были",
+            explanation: "Vergangenheit + Plural (очки) ➔ были",
+            optionsPool: ["были", "было", "будут", "---"]
+        }
+    ];
+
+    // Standard-Set an Optionen, falls keine spezifischen definiert sind (Fallback)
+    const standardOptions = ["был", "была", "было", "были", "будет", "будут", "---"];
+
+    // State
+    let currentIndex = 0;
+    let isSolved = false;
+
+    // DOM
+    const sentenceEl = document.getElementById('sentence-container');
+    const optionsEl = document.getElementById('options-container');
+    const feedbackText = document.getElementById('feedback-text');
+    const feedbackExpl = document.getElementById('feedback-expl');
+    const btnNext = document.getElementById('btn-next');
+    const progressEl = document.getElementById('progress');
+
+    // --- INITIALISIERUNG ---
+    function init() {
+        currentIndex = 0;
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        isSolved = false;
+        const q = questions[currentIndex];
+        
+        // UI Reset
+        feedbackText.textContent = "";
+        feedbackExpl.style.display = "none";
+        feedbackExpl.textContent = "";
+        btnNext.style.display = "none";
+        
+        // Progress Bar
+        const pct = (currentIndex / questions.length) * 100;
+        progressEl.style.width = `${pct}%`;
+
+        // 1. Satz rendern mit Lücke
+        // GAP mit HTML Span ersetzen
+        const displayHTML = q.fullSentence.replace("GAP", `<span id='gap' class='gap-box'></span>`);
+        sentenceEl.innerHTML = displayHTML;
+
+        // 2. Optionen rendern
+        optionsEl.innerHTML = "";
+        
+        // Benutze den spezifischen Pool oder Standard-Optionen
+        let currentOptions = q.optionsPool ? q.optionsPool : standardOptions;
+        
+        // Mischen für Abwechslung (optional, hier einfach rendern)
+        // currentOptions.sort(() => Math.random() - 0.5); 
+
+        currentOptions.forEach(opt => {
+            const btn = document.createElement('div');
+            btn.className = 'puzzle-piece';
+            if (opt === "---") {
+                btn.textContent = "--- (Kein Wort)";
+                btn.classList.add('zero-option');
+                btn.dataset.val = "---";
+            } else {
+                btn.textContent = opt;
+                btn.dataset.val = opt;
+            }
+            
+            btn.onclick = () => checkAnswer(btn, opt);
+            optionsEl.appendChild(btn);
+        });
+    }
+
+    // --- LOGIK ---
+    function checkAnswer(btn, value) {
+        if (isSolved) return; // Blockieren wenn fertig
+
+        const q = questions[currentIndex];
+        const gapEl = document.getElementById('gap');
+
+        if (value === q.correct) {
+            // RICHTIG
+            isSolved = true;
+            
+            // Gap füllen
+            gapEl.textContent = value === "---" ? "∅" : value;
+            gapEl.classList.add('filled');
+            if(value === "---") gapEl.style.borderBottom = "none"; // Sonderfall Optik
+
+            // Button grün
+            btn.classList.add('correct');
+            
+            // Andere Buttons deaktivieren
+            const allBtns = optionsEl.querySelectorAll('.puzzle-piece');
+            allBtns.forEach(b => {
+                if(b !== btn) b.classList.add('disabled');
+            });
+
+            // Feedback
+            feedbackText.innerHTML = "<span class='text-success'>Richtig!</span>";
+            feedbackExpl.textContent = q.explanation;
+            feedbackExpl.style.display = "inline-block";
+
+            // Next Button
+            if (currentIndex < questions.length - 1) {
+                btnNext.style.display = "inline-block";
+            } else {
+                // Ende erreicht
+                btnNext.textContent = "Fertig! 🎉";
+                btnNext.style.display = "inline-block";
+                btnNext.onclick = null; // Oder Neustart anbieten
+                progressEl.style.width = "100%";
+            }
+
+        } else {
+            // FALSCH
+            btn.classList.add('incorrect');
+            btn.classList.add('shake');
+            
+            // Animation entfernen nach Ablauf
+            setTimeout(() => btn.classList.remove('shake'), 400);
+
+            feedbackText.innerHTML = "<span class='text-error'>Falsch. Achten Sie auf die Zeit!</span>";
+        }
+    }
+
+    function nextQuestion() {
+        currentIndex++;
+        if (currentIndex < questions.length) {
+            loadQuestion();
+        }
+    }
+
+    function restartGame() {
+        init();
+    }
+
+    // Start
+    window.addEventListener('DOMContentLoaded', init);
+
+</script>
+
+</body>
+</html>
